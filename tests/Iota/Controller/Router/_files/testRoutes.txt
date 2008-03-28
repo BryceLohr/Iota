@@ -1,0 +1,4 @@
+# Comment line
+/this/is/a/valid/route					MapsToThisController
+Only_one_column/gets_ignored
+										AlsoIgnored

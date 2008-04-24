@@ -268,7 +268,7 @@ HTML;
     public function testUrlProxiesToRouterUrl()
     {
         $mockRouter = $this->getMock('Iota_Controller_Router', array('url'), array(array()));
-        $mockRouter->expects($this->exactly(2))
+        $mockRouter->expects($this->exactly(3))
                    ->method('url');
 
         $GLOBALS['router'] = $mockRouter;
@@ -277,6 +277,7 @@ HTML;
 
         $v->url('ctrl');
         $v->url('ctrl', array('parm'=>'val'));
+        $v->url('ctrl', array('parm'=>'val'), 1);
 
         unset($GLOBALS['router']);
     }

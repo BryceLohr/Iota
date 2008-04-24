@@ -158,4 +158,27 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals($expected, $actual);
     }
+
+    public function testSetWhichRouteUrlUsesForController()
+    {
+        $routes = array(
+            '/resource' => 'TestController',
+            '/alias'    => 'TestController',
+            '/shortcut' => 'TestController'
+        );
+        $r = new Iota_Controller_Router($routes);
+
+        // Default behaviour uses first defined route for controller
+        $expected = '/resource';
+        $actual   = $r->url('TestController');
+        $this->assertEquals($expected, $actual);
+
+        $expected = '/alias';
+        $actual   = $r->url('TestController', null, 1);
+        $this->assertEquals($expected, $actual);
+
+        $expected = '/shortcut';
+        $actual   = $r->url('TestController', null, 2);
+        $this->assertEquals($expected, $actual);
+    }
 }

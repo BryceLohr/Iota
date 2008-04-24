@@ -28,14 +28,6 @@ class Iota_Controller_Router
      */
     public $uriPrefix = null;
 
-    /**
-     * Built the first time url() method is called; provides means to 
-     * reconstruct the URL route to a Controller.
-     *
-     * @var array
-     */
-    protected $_reverseRoutes = null;
-
 
     /**
      * Can take either an array, which must be in the format described above for 
@@ -144,22 +136,30 @@ class Iota_Controller_Router
      * populated by the given data array. Any other keys in the data array will 
      * be turned into query string parameters.
      *
-     * @todo How to handle same controller mapped to multiple routes?
-     *
      * @param string Name of the Controller, as specified in the routes
      * @param array Optional parameters to populate into URL
+     * @param int Optional route index when one Controller has several routes
      * @returns string URL to request the given Controller
-     * @throws none
+     * @throws Exception
      */
-    public function url($ctrl, array $parms = null)
+    public function url($ctrl, array $parms = null, $idx = 0)
     {
-        if (!$this->_reverseRoutes) {
-            // @todo: Handle non-unique controller mappings
-            $this->_reverseRoutes = array_flip($this->routes);
+        // Find all the routes to the given controller
+        $matches = array();
+        foreach ($this->routes as $route => $test) {
+            if ($ctrl == $test) {
+                $matches[] = $route;
+            }
         }
 
+        if (empty($matches)) {
+            throw new Exception("No route found for controller '$ctrl'");
+        }
+
+        // The caller may specify which of the matching routes to use
+        $route = $matches[(int)$idx];
+
         // Populate the route variables with the given parameter values
-        $route = $this->_reverseRoutes[$ctrl];
         foreach (explode('/', trim($route, '/')) as $seg) {
             if (':' == $seg[0]) {
                 $var = substr($seg, 1);

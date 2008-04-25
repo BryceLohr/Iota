@@ -104,6 +104,25 @@ class Iota_ViewTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($expectedArray,  $v->testArray);
     }
 
+    public function testBulkCopyArraysIntoView()
+    {
+        $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
+
+        $test = array(
+            'key1' => 'plain data',
+            'key2' => 'needs <escaping>',
+            'key3' => array('foo', '"bar"', 'dog'=>'cat')
+        );
+
+        $v->bulkCopy($test);
+
+        $this->assertEquals('plain data', $v->key1);
+        $this->assertEquals('needs &lt;escaping&gt;', $v->key2);
+
+        $expected = array('foo', '&quot;bar&quot;', 'dog'=>'cat');
+        $this->assertEquals($expected, $v->key3);
+    }
+
     public function testSetRawDoesNotEscape()
     {
         $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');

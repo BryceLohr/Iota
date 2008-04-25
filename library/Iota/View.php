@@ -88,10 +88,7 @@ class Iota_View
     public function factory($template, array $data = array())
     {
         $view = new self($template);
-
-        foreach ($data as $key => $val) {
-            $view->$key = $val;
-        }
+        $view->bulkCopy($data);
 
         return $view;
     }
@@ -142,6 +139,21 @@ class Iota_View
         // Otherwise, escape and assign the value
         else {
             $this->$name = $this->escape($value);
+        }
+    }
+
+    /**
+     * Convenience method to assign a whole array of data to the view in one 
+     * call.
+     *
+     * @param array Assoc array of data; keys are mapped to properties
+     * @returns void
+     * @throws none
+     */
+    public function bulkCopy(array $data)
+    {
+        foreach ($data as $key => $val) {
+            $this->$key = $val;
         }
     }
 

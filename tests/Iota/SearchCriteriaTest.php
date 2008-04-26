@@ -29,6 +29,10 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
             'field8'    => 'input8',
             'field9_lo' => 'input9_loval',
             'field9_hi' => 'input9_hival',
+            'empty1'    => '',
+            'empty2'    => '',
+            'empty3_lo' => '',
+            'empty3_hi' => ''
         );
     }
 
@@ -232,9 +236,55 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
         $e = $c->land($c->eq('field1'), $c->lor($c->lt('field2'), $c->gt('field3')),
              $c->lnot($c->land($c->eq('field4'), $c->lor($c->le('field5'),
              $c->ge('field6')))));
+
         $this->assertEquals(
             "field1 = 'input1' AND (field2 < 'input2' OR field3 > 'input3') AND " .
             "NOT(field4 = 'input4' AND (field5 <= 'input5' OR field6 >= 'input6'))",
+            (string) $e
+        );
+    }
+
+    public function testEmptyInputIsSkipped1()
+    {
+        $c = new Iota_SearchCriteria($this->userInput);
+
+        $ops = array('eq', 'ne', 'lt', 'gt', 'le', 'ge', 'begins', 'contains');
+        foreach ($ops as $op) {
+            $t = $c->$op('empty1');
+            $this->assertEquals(null, $t);
+        }
+
+        $t = $c->between('empty3');
+        $this->assertEquals(null, $t);
+    }
+
+    public function testEmptyInputIsSkipped2()
+    {
+        $c = new Iota_SearchCriteria($this->userInput);
+
+        $e = $c->land($c->eq('empty1'), $c->lor($c->ne('empty2'), $c->between('empty3')));
+        $this->assertEquals(null, $e);
+    }
+
+    public function testEmptyInputIsSkipped3()
+    {
+        $c = new Iota_SearchCriteria($this->userInput);
+
+        $e = $c->land($c->eq('field1'), $c->eq('empty1'));
+        $this->assertEquals(
+            "field1 = 'input1'",
+            (string) $e
+        );
+
+        $e = $c->lor($c->eq('field1'), $c->eq('empty1'), $c->eq('field2'));
+        $this->assertEquals(
+            "field1 = 'input1' OR field2 = 'input2'",
+            (string) $e
+        );
+
+        $e = $c->lor($c->eq('field1'), $c->land($c->eq('field3'), $c->eq('empty1')), $c->eq('field2'));
+        $this->assertEquals(
+            "field1 = 'input1' OR field3 = 'input3' OR field2 = 'input2'",
             (string) $e
         );
     }

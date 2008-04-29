@@ -164,7 +164,7 @@ class Iota_Controller_Router
             if (':' == $seg[0]) {
                 $var = substr($seg, 1);
                 if (array_key_exists($var, $parms)) {
-                    $route = str_replace(':'.$var, $parms[$var], $route);
+                    $route = str_replace(':'.$var, urlencode($parms[$var]), $route);
                     unset($parms[$var]); // So it doesn't get into query string
                 }
             }
@@ -175,6 +175,6 @@ class Iota_Controller_Router
             $route .= '?' . http_build_query($parms);
         }
 
-        return $route;
+        return $this->uriPrefix . $route;
     }
 }

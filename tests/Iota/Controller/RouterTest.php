@@ -159,6 +159,18 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $actual);
     }
 
+    public function testUrlEncodesParams()
+    {
+        $routes = array('/test/:var1/:var2' => 'TestController');
+        $r = new Iota_Controller_Router($routes);
+
+        $expected = '/test/a+path/a%3D%22b%22?q=%2Fhere&alpha=there%3F';
+        $actual = $r->url('TestController', 
+                          array('var1'=>'a path', 'var2'=>'a="b"', 'q'=>'/here', 'alpha'=>'there?'));
+
+        $this->assertEquals($expected, $actual);
+    }
+
     public function testSetWhichRouteUrlUsesForController()
     {
         $routes = array(

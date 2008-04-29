@@ -8,7 +8,6 @@
  * fields whose value is the empty string are automatically skipped, so no where 
  * clause term will be created for fields the user omitted.
  *
- * @todo       Handle optional fields
  * @todo       Escape values for DB
  * @todo       Base quote-wrapping on field data type
  *
@@ -23,7 +22,7 @@ class Iota_SearchCriteria
     /**
      * Assoc array of user input data
      *
-     * @var
+     * @var array
      */
     protected $_input;
 

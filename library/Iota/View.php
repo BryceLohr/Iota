@@ -174,11 +174,13 @@ class Iota_View
     }
 
     /**
-     * Escapes data for output into HTML. Non-array values are cast to strings. 
-     * Automatically recursively escapes arrays. Uses htmlentities() to do the 
-     * escaping.
+     * Escapes data for output into HTML. Automatically recursively escapes 
+     * arrays. Uses htmlentities() to do the escaping. Empty values are passed 
+     * straight through, unmodified, since escaping them is a waste of time. One 
+     * useful side-effect of this is that you can distinguish DB null values 
+     * from empty strings in the template.
      *
-     * @todo Array keys should probably also be escaped
+     * @todo Array keys should probably also be escaped, and/or filtered
      *
      * @param mixed Data to escape
      * @returns mixed Escaped version of data
@@ -186,15 +188,18 @@ class Iota_View
      */
     public function escape($data)
     {
-        if (is_array($data)) {
+        if (empty($data)) {
+            return $data;
+
+        } else if (is_array($data)) {
             foreach ($data as $key => $val) {
                 $data[$key] = $this->escape($val);
             }
             return $data;
 
         } else {
-            // Convert all quotes, use Latin-1 charset, don't double-encode
-            return htmlentities((string)$data, ENT_QUOTES, 'ISO-8859-1', false);
+            // Convert all quotes, use Latin-1 charset
+            return htmlentities((string)$data, ENT_QUOTES, 'ISO-8859-1');
         }
     }
 

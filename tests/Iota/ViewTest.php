@@ -278,6 +278,26 @@ HTML;
         $this->assertEquals($expected, $v->addHeadJs());
     }
 
+    public function testAddHeadCssAddsBlockOfCss()
+    {
+        $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
+
+        $expected = '';
+        $this->assertEquals($expected, $v->addHeadCss());
+
+        $v->addHeadCss('h1 {font-style: italic;}');
+        $expected = '<style type="text/css">h1 {font-style: italic;}</style>';
+        $this->assertEquals($expected, $v->addHeadCss());
+
+        $v->addHeadCss('label {float: left;}');
+        $expected = '<style type="text/css">h1 {font-style: italic;}</style><style type="text/css">label {float: left;}</style>';
+        $this->assertEquals($expected, $v->addHeadCss());
+
+        $v->addHeadCss('h1 {font-style: italic;}');
+        $expected = '<style type="text/css">h1 {font-style: italic;}</style><style type="text/css">label {float: left;}</style><style type="text/css">h1 {font-style: italic;}</style>';
+        $this->assertEquals($expected, $v->addHeadCss());
+    }
+
     public function testAddHeadJsOnceAddsOnlyOnce()
     {
         $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
@@ -299,6 +319,29 @@ HTML;
         $expected = '<script type="text/javascript">alert("hi");</script>'."\n".
                     '<script type="text/javascript">alert("more");</script>';
         $this->assertEquals($expected, $v->addHeadJsOnce());
+    }
+
+    public function testAddHeadCssOnceAddsOnlyOnce()
+    {
+        $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
+
+        $expected = '';
+        $this->assertEquals($expected, $v->addHeadCssOnce());
+
+        $v->addHeadCssOnce('h1 {font-style: italic;}');
+        $expected = '<style type="text/css">h1 {font-style: italic;}</style>';
+        $this->assertEquals($expected, $v->addHeadCssOnce());
+
+        $v->addHeadCssOnce('label {float: left;}');
+        $expected = '<style type="text/css">h1 {font-style: italic;}</style>'."\n".
+                    '<style type="text/css">label {float: left;}</style>';
+        $this->assertEquals($expected, $v->addHeadCssOnce());
+
+        // The duplicate code shouldn't be added twice
+        $v->addHeadCssOnce('h1 {font-style: italic;}');
+        $expected = '<style type="text/css">h1 {font-style: italic;}</style>'."\n".
+                    '<style type="text/css">label {float: left;}</style>';
+        $this->assertEquals($expected, $v->addHeadCssOnce());
     }
 
     public function testUrlProxiesToRouterUrl()

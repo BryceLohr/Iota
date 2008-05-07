@@ -26,7 +26,7 @@ class Iota_View
      * @var array
      * @static
      */
-    protected static $_includedJs = array();
+    protected static $_includeJs = array();
 
     /**
      * Array of <link> tags that need to be inserted into the <head> element of 
@@ -36,7 +36,7 @@ class Iota_View
      * @var array
      * @static
      */
-    protected static $_includedCss = array();
+    protected static $_includeCss = array();
 
     /**
      * Raw JavaScript code that should be added to the <head> tag. Static 
@@ -55,6 +55,24 @@ class Iota_View
      * @static
      */
     protected static $_addHeadJsOnce = array();
+
+    /**
+     * Raw CSS code that should be added to the <head> tag. Static because it's 
+     * meant to be used for the whole response.
+     *
+     * @var string
+     * @static
+     */
+    protected static $_addHeadCss = '';
+
+    /**
+     * Raw CSS code that should be added only once to the <head> tag.  Static 
+     * because it's meant to be used for the whole response.
+     *
+     * @var array
+     * @static
+     */
+    protected static $_addHeadCssOnce = array();
 
     /**
      * Internal flag used to tell __set() to skip escaping.
@@ -214,10 +232,10 @@ class Iota_View
     public function includeJs($path = false)
     {
         if (!$path) {
-            return implode("\n", self::$_includedJs);
+            return implode("\n", self::$_includeJs);
         }
-        if (!isset(self::$_includedJs[$path])) {
-            self::$_includedJs[$path] = sprintf(
+        if (!isset(self::$_includeJs[$path])) {
+            self::$_includeJs[$path] = sprintf(
                 '<script type="text/javascript" src="%s"></script>',
                 $this->escape($path)
             );
@@ -235,10 +253,10 @@ class Iota_View
     public function includeCss($path = false)
     {
         if (!$path) {
-            return implode("\n", self::$_includedCss);
+            return implode("\n", self::$_includeCss);
         }
-        if (!isset(self::$_includedCss[$path])) {
-            self::$_includedCss[$path] = sprintf(
+        if (!isset(self::$_includeCss[$path])) {
+            self::$_includeCss[$path] = sprintf(
                 '<link rel="stylesheet" type="text/css" href="%s">',
                 $this->escape($path)
             );
@@ -286,6 +304,50 @@ class Iota_View
         if (!isset(self::$_addHeadJsOnce[$key])) {
             self::$_addHeadJsOnce[$key] = sprintf(
                 '<script type="text/javascript">%s</script>', $code);
+        }
+    }
+
+    /**
+     * Adds a block of CSS code to the <head> tag. A new block will be added 
+     * each time this is called, even if it's with the same content. The given 
+     * code gets wraped in a <style> tag. Called with an argument sets it, 
+     * without an argument retreives all the markup.
+     *
+     * @param string JavaScript code
+     * @returns void
+     * @throws none
+     */
+    public function addHeadCss($code = false)
+    {
+        if (!$code) {
+            return self::$_addHeadCss;
+        }
+
+        self::$_addHeadCss .= sprintf(
+            '<style type="text/css">%s</style>', $code);
+    }
+
+    /**
+     * Adds a block of CSS code to the <head> tag. The given code is only ever 
+     * included once, regardless of how many times it's added. The given code 
+     * gets wrapped in a <style> tag. Called with an argument sets it, without 
+     * an argument retreives all the markup.
+     *
+     * @param string JavaScript code
+     * @returns void
+     * @throws none
+     */
+    public function addHeadCssOnce($code = false)
+    {
+        if (!$code) {
+            return implode("\n", self::$_addHeadCssOnce);
+        }
+
+        $key = hash('md5', $code);
+
+        if (!isset(self::$_addHeadCssOnce[$key])) {
+            self::$_addHeadCssOnce[$key] = sprintf(
+                '<style type="text/css">%s</style>', $code);
         }
     }
 

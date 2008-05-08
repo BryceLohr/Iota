@@ -152,7 +152,9 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $routes = array('/test/:var1/:var2' => 'TestController');
         $r = new Iota_Controller_Router($routes);
 
-        $expected = '/test/foo/bar?q=p&alpha=omega';
+        $argsep = ini_get('arg_separator.output');
+
+        $expected = '/test/foo/bar?q=p'.$argsep.'alpha=omega';
         $actual = $r->url('TestController', 
                           array('var1'=>'foo', 'var2'=>'bar', 'q'=>'p', 'alpha'=>'omega'));
 
@@ -164,7 +166,9 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $routes = array('/test/:var1/:var2' => 'TestController');
         $r = new Iota_Controller_Router($routes);
 
-        $expected = '/test/a+path/a%3D%22b%22?q=%2Fhere&alpha=there%3F';
+        $argsep = ini_get('arg_separator.output');
+
+        $expected = '/test/a+path/a%3D%22b%22?q=%2Fhere'.$argsep.'alpha=there%3F';
         $actual = $r->url('TestController', 
                           array('var1'=>'a path', 'var2'=>'a="b"', 'q'=>'/here', 'alpha'=>'there?'));
 

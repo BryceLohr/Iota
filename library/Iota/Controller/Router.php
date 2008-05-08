@@ -65,7 +65,8 @@ class Iota_Controller_Router
      */
     public function route()
     {
-        $path = $_SERVER['REQUEST_URI'];
+        // Get the path part of the REQUEST_URI, without the query string
+        $path = $_SERVER['PHP_SELF'];
 
         // If using the uriPrefix, only match if the current REQUEST_URI has the 
         // prefix. Thereafter, all the routes will effectively be relative to 

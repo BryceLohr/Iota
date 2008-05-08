@@ -51,12 +51,14 @@ class Iota_Controller_Router_FileReader
 
         $routes = array();
 
-        while ($line = fscanf($fp, '%s %s')) {
-            list($route, $ctrl) = $line;
+        while (!feof($fp)) {
+            $route = $ctrl = '';
 
-            // Allow lines starting with '#' to be comments
-            if ('#' == $route[0]) continue;
+            if (!fscanf($fp, '%s %s', $route, $ctrl)) continue;
+
+            // Skip empty lines and allow lines starting with '#' to be comments
             if (empty($route) || empty($ctrl)) continue;
+            if ('#' == $route[0]) continue;
             
             $routes[$route] = $ctrl;
         }

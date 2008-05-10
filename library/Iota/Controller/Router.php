@@ -66,17 +66,18 @@ class Iota_Controller_Router
     public function route()
     {
         // Get the path part of the REQUEST_URI, without the query string
-        $path = $_SERVER['PHP_SELF'];
+        // NOTE: SCRIPT_URL is defined by mod_rewrite, so this isn't portable
+        $path = $_SERVER['SCRIPT_URL'];
 
         // If using the uriPrefix, only match if the current REQUEST_URI has the 
         // prefix. Thereafter, all the routes will effectively be relative to 
         // the prefix.
         if ($this->uriPrefix) {
-            $pattern = '!^'.preg_quote($this->uriPrefix, '!').'!';
-            if (!preg_match($pattern, $path)) {
-                return false;
+            if (0 === strpos($path, $this->uriPrefix)) {
+                // Remove the prefix from the path before route matching
+                $path = substr($path, strlen($this->uriPrefix));
             } else {
-                $path = preg_replace($pattern, '', $path, 1);
+                return false;
             }
         }
 

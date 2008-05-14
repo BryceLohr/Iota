@@ -179,4 +179,24 @@ class Iota_Controller_Router
 
         return $this->uriPrefix . $route;
     }
+
+    /**
+     * The absolute URI version of the url() method. The signature is slightly 
+     * different: the 3rd parameter is an optional flag for HTTPS, instead of a 
+     * route index. The 4th parameter is the optional route index.
+     *
+     * @param string Name of the Controller, as specified in the routes
+     * @param array Optional parameters to populate into URL
+     * @param bool Optional flag indicating HTTPS protocol (default: false)
+     * @param int Optional route index when one Controller has several routes
+     * @returns string URL to request the given Controller
+     * @throws none
+     */
+    public function absUrl($ctrl, array $parms = null, $https = false, $idx = 0)
+    {
+        $url  = $https? 'https://': 'http://';
+        $url .= $_SERVER['HTTP_HOST'];
+
+        return $url . $this->url($ctrl, $parms, $idx);
+    }
 }

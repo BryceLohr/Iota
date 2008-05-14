@@ -175,7 +175,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $actual);
     }
 
-    public function testSetWhichRouteUrlUsesForController()
+    public function testSetWhichRouteUrlUsesForController1()
     {
         $routes = array(
             '/resource' => 'TestController',
@@ -195,6 +195,57 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
 
         $expected = '/shortcut';
         $actual   = $r->url('TestController', null, 2);
+        $this->assertEquals($expected, $actual);
+    }
+
+    public function testAbsUrlReturnsAbsoluteUrl()
+    {
+        $routes = array('/test/:var1/:var2' => 'TestController');
+        $r = new Iota_Controller_Router($routes);
+
+        $_SERVER['HTTP_HOST'] = 'unit.tests';
+
+        $expected = 'http://unit.tests/test/foo/bar';
+        $actual = $r->absUrl('TestController', array('var1'=>'foo', 'var2'=>'bar'));
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    public function testAbsUrlReturnsAbsoluteUrlWithHttps()
+    {
+        $routes = array('/test/:var1/:var2' => 'TestController');
+        $r = new Iota_Controller_Router($routes);
+
+        $_SERVER['HTTP_HOST'] = 'unit.tests';
+
+        $expected = 'https://unit.tests/test/foo/bar';
+        $actual = $r->absUrl('TestController', array('var1'=>'foo', 'var2'=>'bar'), true);
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    public function testSetWhichRouteUrlUsesForController2()
+    {
+        $routes = array(
+            '/resource' => 'TestController',
+            '/alias'    => 'TestController',
+            '/shortcut' => 'TestController'
+        );
+        $r = new Iota_Controller_Router($routes);
+
+        $_SERVER['HTTP_HOST'] = 'unit.tests';
+
+        // Default behaviour uses first defined route for controller
+        $expected = 'http://unit.tests/resource';
+        $actual   = $r->absUrl('TestController');
+        $this->assertEquals($expected, $actual);
+
+        $expected = 'http://unit.tests/alias';
+        $actual   = $r->absUrl('TestController', null, false, 1);
+        $this->assertEquals($expected, $actual);
+
+        $expected = 'http://unit.tests/shortcut';
+        $actual   = $r->absUrl('TestController', null, false, 2);
         $this->assertEquals($expected, $actual);
     }
 }

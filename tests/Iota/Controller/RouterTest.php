@@ -42,7 +42,18 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $routes = array('/test' => 'TestController');
         $r = new Iota_Controller_Router($routes);
 
-        $_SERVER['SCRIPT_URL'] = '/test';
+        $_SERVER['REQUEST_URI'] = '/test';
+
+        $actual = $r->route();
+        $this->assertEquals('TestController', $actual);
+    }
+
+    public function testRouteIgnoresQueryString1()
+    {
+        $routes = array('/test' => 'TestController');
+        $r = new Iota_Controller_Router($routes);
+
+        $_SERVER['REQUEST_URI'] = '/test?q=p&foo=bar';
 
         $actual = $r->route();
         $this->assertEquals('TestController', $actual);
@@ -53,7 +64,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $routes = array('/test' => 'TestController');
         $r = new Iota_Controller_Router($routes);
 
-        $_SERVER['SCRIPT_URL'] = '/foobar';
+        $_SERVER['REQUEST_URI'] = '/foobar';
 
         $this->assertFalse($r->route());
     }
@@ -63,13 +74,28 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $routes = array('/test/:var1/:var2' => 'TestController');
         $r = new Iota_Controller_Router($routes);
 
-        $_SERVER['SCRIPT_URL'] = '/test/foo/bar';
+        $_SERVER['REQUEST_URI'] = '/test/foo/bar';
         $this->assertEquals('TestController', $r->route());
 
-        $_SERVER['SCRIPT_URL'] = '/baz';
+        $_SERVER['REQUEST_URI'] = '/baz';
         $this->assertFalse($r->route());
 
-        $_SERVER['SCRIPT_URL'] = '/test';
+        $_SERVER['REQUEST_URI'] = '/test';
+        $this->assertFalse($r->route());
+    }
+
+    public function testRouteIgnoresQueryString2()
+    {
+        $routes = array('/test/:var1/:var2' => 'TestController');
+        $r = new Iota_Controller_Router($routes);
+
+        $_SERVER['REQUEST_URI'] = '/test/foo/bar?foo=bar&q=p';
+        $this->assertEquals('TestController', $r->route());
+
+        $_SERVER['REQUEST_URI'] = '/baz?var1=test1';
+        $this->assertFalse($r->route());
+
+        $_SERVER['REQUEST_URI'] = '/test?var1=test1&var2=test2';
         $this->assertFalse($r->route());
     }
 
@@ -78,7 +104,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $routes = array('/test/:var1/:var2' => 'TestController');
         $r = new Iota_Controller_Router($routes);
 
-        $_SERVER['SCRIPT_URL'] = '/test/foo/bar';
+        $_SERVER['REQUEST_URI'] = '/test/foo/bar';
         $this->assertEquals('TestController', $r->route());
 
         $this->assertArrayHasKey('var1', $_REQUEST);
@@ -95,7 +121,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         );
         $r = new Iota_Controller_Router($routes);
 
-        $_SERVER['SCRIPT_URL'] = '/test/static/foo';
+        $_SERVER['REQUEST_URI'] = '/test/static/foo';
         $this->assertEquals('TestController2', $r->route());
 
         $this->assertArrayHasKey('var1', $_REQUEST);
@@ -112,10 +138,10 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $r = new Iota_Controller_Router($routes);
         $r->uriPrefix = '/test';
 
-        $_SERVER['SCRIPT_URL'] = '/test/static';
+        $_SERVER['REQUEST_URI'] = '/test/static';
         $this->assertEquals('TestController1', $r->route());
 
-        $_SERVER['SCRIPT_URL'] = '/test/foo/bar';
+        $_SERVER['REQUEST_URI'] = '/test/foo/bar';
         $this->assertEquals('TestController2', $r->route());
     }
 
@@ -129,10 +155,10 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $r = new Iota_Controller_Router($routes);
         $r->uriPrefix = '/test';
 
-        $_SERVER['SCRIPT_URL'] = '/static';
+        $_SERVER['REQUEST_URI'] = '/static';
         $this->assertFalse($r->route());
 
-        $_SERVER['SCRIPT_URL'] = '/foo/bar';
+        $_SERVER['REQUEST_URI'] = '/foo/bar';
         $this->assertFalse($r->route());
     }
 

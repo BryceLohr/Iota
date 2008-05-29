@@ -250,6 +250,32 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $actual);
     }
 
+    public function testAbsUrlAutoDetectsCurrentHttps()
+    {
+        $routes = array(
+            '/test/:var1/:var2' => 'TestController1',
+            '/test2/:var1'      => 'TestController2'
+        );
+
+        $r = new Iota_Controller_Router($routes);
+
+        $_SERVER['HTTP_HOST'] = 'unit.tests';
+
+        $expected = 'http://unit.tests/test/foo/bar';
+        $actual = $r->absUrl('TestController1', array('var1'=>'foo', 'var2'=>'bar'));
+
+        $_SERVER['HTTPS'] = 'off';
+        $expected = 'http://unit.tests/test2/quux';
+        $actual = $r->absUrl('TestController2', array('var1'=>'quux'));
+
+        $_SERVER['HTTPS'] = 'on';
+        $expected = 'https://unit.tests/test/baz/bat';
+        $actual = $r->absUrl('TestController1', array('var1'=>'baz', 'var2'=>'bat'));
+
+        $this->assertEquals($expected, $actual);
+        unset($_SERVER['HTTPS']);
+    }
+
     public function testSetWhichRouteUrlUsesForController2()
     {
         $routes = array(

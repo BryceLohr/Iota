@@ -188,18 +188,31 @@ class Iota_Controller_Router
      * different: the 3rd parameter is an optional flag for HTTPS, instead of a 
      * route index. The 4th parameter is the optional route index.
      *
+     * If the 3rd parameter is omitted or null, the "current" HTTPS state is 
+     * used. I.E., if HTTPS was on for this request, it will generate an 
+     * https:// URL; otherwise, it will generate an http:// URL. If the 3rd 
+     * parameter is given true, it will force https://, while false will force 
+     * http://.
+     *
      * @param string Name of the Controller, as specified in the routes
      * @param array Optional parameters to populate into URL
-     * @param bool Optional flag indicating HTTPS protocol (default: false)
+     * @param bool Optional flag indicating HTTPS protocol (default: null)
      * @param int Optional route index when one Controller has several routes
      * @returns string URL to request the given Controller
      * @throws none
      */
-    public function absUrl($ctrl, array $parms = null, $https = false, $idx = 0)
+    public function absUrl($ctrl, array $parms = null, $https = null, $idx = 0)
     {
-        $url  = $https? 'https://': 'http://';
-        $url .= $_SERVER['HTTP_HOST'];
+        // Auto-detect current HTTPS status by default
+        if (null === $https) {
+            $https = empty($_SERVER['HTTPS']) || 'off' == $_SERVER['HTTPS']?
+                     'http://': 'https://';
+        } else if (true == $https) {
+            $https = 'https://';
+        } else {
+            $https = 'http://';
+        }
 
-        return $url . $this->url($ctrl, $parms, $idx);
+        return $https . $_SERVER['HTTP_HOST'] . $this->url($ctrl, $parms, $idx);
     }
 }

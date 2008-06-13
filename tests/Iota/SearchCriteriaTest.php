@@ -288,4 +288,29 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
             (string) $e
         );
     }
+
+    // Ensure it still works when the non-empty input is *not* the first in the 
+    // parmater list
+    public function testEmptyInputIsSkipped4()
+    {
+        $c = new Iota_SearchCriteria($this->userInput);
+
+        $e = $c->land($c->eq('empty1'), $c->eq('field1'));
+        $this->assertEquals(
+            "field1 = 'input1'",
+            (string) $e
+        );
+
+        $e = $c->lor($c->eq('empty1'), $c->eq('field1'));
+        $this->assertEquals(
+            "field1 = 'input1'",
+            (string) $e
+        );
+
+        $e = $c->lor($c->land($c->eq('empty1'), $c->eq('field3')), $c->eq('field2'), $c->eq('field1'));
+        $this->assertEquals(
+            "field3 = 'input3' OR field2 = 'input2' OR field1 = 'input1'",
+            (string) $e
+        );
+    }
 }

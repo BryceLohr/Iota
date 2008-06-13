@@ -41,7 +41,7 @@ class Iota_SearchCriteria
         if ($num > 1) {
             return new Iota_SearchCriteria_Expr_And($args);
         } else if ($num == 1) {
-            return $args[0];
+            return reset($args); // The exact index is unknown
         } else {
             return null;
         }
@@ -56,7 +56,7 @@ class Iota_SearchCriteria
         if ($num > 1) {
             return new Iota_SearchCriteria_Expr_Or($args);
         } else if ($num == 1) {
-            return $args[0];
+            return reset($args); // The exact index is unknown
         } else {
             return null;
         }

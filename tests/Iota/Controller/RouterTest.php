@@ -162,13 +162,25 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($r->route());
     }
 
-    public function testUrlRecreatesUrlToController()
+    public function testUrlRecreatesUrlToController1()
     {
         $routes = array('/test/:var1/:var2' => 'TestController');
         $r = new Iota_Controller_Router($routes);
 
         $expected = '/test/foo/bar';
         $actual = $r->url('TestController', array('var1'=>'foo', 'var2'=>'bar'));
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    public function testUrlRecreatesUrlToController2()
+    {
+        // Ensure a parameter-less route works
+        $routes = array('/' => 'TestController');
+        $r = new Iota_Controller_Router($routes);
+
+        $expected = '/';
+        $actual = $r->url('TestController');
 
         $this->assertEquals($expected, $actual);
     }

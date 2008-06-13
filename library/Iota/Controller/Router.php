@@ -166,7 +166,7 @@ class Iota_Controller_Router
 
         // Populate the route variables with the given parameter values
         foreach (explode('/', trim($route, '/')) as $seg) {
-            if (':' == $seg[0]) {
+            if (!empty($seg) && ':' == $seg[0]) {
                 $var = substr($seg, 1);
                 if (array_key_exists($var, $parms)) {
                     $route = str_replace(':'.$var, urlencode($parms[$var]), $route);

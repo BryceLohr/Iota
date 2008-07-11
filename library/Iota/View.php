@@ -12,7 +12,7 @@ class Iota_View
 {
     /**
      * Path to template representing this view. Double underscore to protect it 
-     * a bit better from extract() in __toString().
+     * a bit better from name collisions with user variables.
      *
      * @var string
      */
@@ -95,15 +95,16 @@ class Iota_View
     }
 
     /**
-     * Provides a convenient way to create new view objects inside a view 
-     * template script.
+     * Provides a quick, convenient way to produce a sub-view from inside a 
+     * template. Great for when you just want to "include" a template within the 
+     * current one.
      *
      * @param string Path to view template
      * @param array Asso. array of data for the view
      * @returns Iota_View
      * @throws none
      */
-    public function factory($template, array $data = array())
+    public function subview($template, array $data = array())
     {
         $view = new self($template);
         $view->bulkCopy($data);
@@ -122,7 +123,10 @@ class Iota_View
      */
     public function __toString()
     {
+        // TODO: Find a quick, efficient way to get all the *public* properties 
+        // as an array. This unset is a maintenance problem...
         extract(get_object_vars($this));
+        unset($__template, $_raw);
 
         ob_start();
         require $this->__template;

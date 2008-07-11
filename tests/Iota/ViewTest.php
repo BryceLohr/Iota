@@ -187,21 +187,21 @@ HTML;
         $this->assertEquals($expected, (string)$v);
     }
 
-    public function testFactoryReturnsNewView()
+    public function testSubviewReturnsNewView()
     {
         $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
 
-        $result = $v->factory(dirname(__FILE__).'/_files/viewTemplate1.phtml');
+        $result = $v->subview(dirname(__FILE__).'/_files/viewTemplate1.phtml');
 
         $this->assertType('Iota_View', $result);
         $this->assertNotSame($result, $v);
     }
 
-    public function testFactorySetsPropertiesFromArray()
+    public function testSubviewSetsPropertiesFromArray()
     {
         $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
 
-        $result = $v->factory(dirname(__FILE__).'/_files/viewTemplate2.phtml', array(
+        $result = $v->subview(dirname(__FILE__).'/_files/viewTemplate2.phtml', array(
             'title' => 'Title',
             'body'  => 'Body'
         ));

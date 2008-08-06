@@ -99,10 +99,31 @@ class Iota_Controller_DispatcherTest extends PHPUnit_Framework_TestCase
         }
         unset($GLOBALS['mock404Called']);
     }
+
+    public function testDispatcherCallsBeforeAfterHooks()
+    {
+        $r = $this->getMock('Iota_Controller_Router', array(), array(array()));
+        $r->expects($this->once())
+          ->method('route')
+          ->will($this->returnValue('MockHooksController'));
+
+        $_SERVER['REQUEST_METHOD']    = 'GET';
+        $GLOBALS['mockGetCalled']     = false;
+        $GLOBALS['beforeHookCalled']  = false;
+        $GLOBALS['afterHookCalled']   = false;
+
+        $d = new Iota_Controller_Dispatcher($r);
+        $d->dispatch();
+
+        if (!$GLOBALS['mockGetCalled'] || !$GLOBALS['beforeHookCalled'] || !$GLOBALS['afterHookCalled']) {
+            $this->fail('Failed to call hook methods and action method on MockHooksController');
+        }
+        unset($GLOBALS['mockGetCalled'], $GLOBALS['beforeHookCalled'], $GLOBALS['afterHookCalled']);
+    }
 }
 
-/**
- * Mock class used to test the dispatcher
+/*
+ * Mock classes used to test the dispatcher
  */
 class MockController
 {
@@ -113,5 +134,20 @@ class MockController
     public function do404()
     {
         $GLOBALS['mock404Called'] = true;
+    }
+}
+class MockHooksController
+{
+    public function beforeGet()
+    {
+        $GLOBALS['beforeHookCalled'] = true;
+    }
+    public function get()
+    {
+        $GLOBALS['mockGetCalled'] = true;
+    }
+    public function afterGet()
+    {
+        $GLOBALS['afterHookCalled'] = true;
     }
 }

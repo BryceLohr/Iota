@@ -44,6 +44,13 @@ class Iota_Controller_Dispatcher
      * matched route can't be loaded by an autoloader, you'll get a standard PHP 
      * "Class not found" fatal error.
      *
+     * Controllers may optionally provide before and/or after methods that will 
+     * be called just before and right after (respectively) the normal request 
+     * method is called. Each different request method may provide its own 
+     * before/after method(s). Prepend the request method with "before" or 
+     * "after", like so: beforeGet(), afterGet(), beforePost(), afterPost(); and 
+     * so on. Notice the camel-casing.
+     *
      * @param void
      * @returns void
      * @throws none
@@ -58,10 +65,27 @@ class Iota_Controller_Dispatcher
         $ctrl = new $ctrlName;
         $method = strtolower($_SERVER['REQUEST_METHOD']);
 
+        // If there's no method to handle the request, we don't want to run the 
+        // before/after hooks.
         if (!method_exists($ctrl, $method)) {
             return $this->dispatch404();
         }
+
+        // Construct hook names based on the current request method
+        $method = ucfirst($method);
+        $before = 'before'.$method;
+        $after  = 'after' .$method;
+
+        // Invoke before method, if available
+        if (method_exists($ctrl, $before)) {
+            $ctrl->$before();
+        }
+        // Always invoke request method
         $ctrl->$method();
+        // Invoke after method, if available
+        if (method_exists($ctrl, $after)) {
+            $ctrl->$after();
+        }
     }
 
     /**
@@ -81,7 +105,7 @@ class Iota_Controller_Dispatcher
 
         if ($this->handle404with) {
             list($class, $method) = explode('::', $this->handle404with);
-            $obj = new $class($this);
+            $obj = new $class;
             if (method_exists($obj, $method)) {
                 $obj->$method();
             }

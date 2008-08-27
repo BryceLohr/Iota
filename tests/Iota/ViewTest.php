@@ -21,7 +21,7 @@ class Iota_ViewTest extends PHPUnit_Framework_TestCase
         // Omitting the argument should cause a PHP warning
         try {
             $v = new Iota_View;
-        } catch (EPhpMessage $e) {
+        } catch (ErrorException $e) {
             // success
         }
     }
@@ -121,7 +121,7 @@ class Iota_ViewTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($expectedArray,  $v->testArray);
     }
 
-    public function testBulkCopyArraysIntoView()
+    public function testImportCopiesArraysIntoView()
     {
         $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
 
@@ -131,7 +131,45 @@ class Iota_ViewTest extends PHPUnit_Framework_TestCase
             'key3' => array('foo', '"bar"', 'dog'=>'cat')
         );
 
-        $v->bulkCopy($test);
+        $v->import($test);
+
+        $this->assertEquals('plain data', $v->key1);
+        $this->assertEquals('needs &lt;escaping&gt;', $v->key2);
+
+        $expected = array('foo', '&quot;bar&quot;', 'dog'=>'cat');
+        $this->assertEquals($expected, $v->key3);
+    }
+
+    public function testImportCopiesObjectIntoView()
+    {
+        $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
+
+        $test = new stdClass;
+        $test->key1 = 'plain data';
+        $test->key2 = 'needs <escaping>';
+        $test->key3 = array('foo', '"bar"', 'dog'=>'cat');
+
+        $v->import($test);
+
+        $this->assertEquals('plain data', $v->key1);
+        $this->assertEquals('needs &lt;escaping&gt;', $v->key2);
+
+        $expected = array('foo', '&quot;bar&quot;', 'dog'=>'cat');
+        $this->assertEquals($expected, $v->key3);
+    }
+
+    public function testImportCopiesIteratorIntoView()
+    {
+        $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
+
+        $t = array(
+            'key1' => 'plain data',
+            'key2' => 'needs <escaping>',
+            'key3' => array('foo', '"bar"', 'dog'=>'cat')
+        );
+        $test = new ArrayObject($t);
+
+        $v->import($test);
 
         $this->assertEquals('plain data', $v->key1);
         $this->assertEquals('needs &lt;escaping&gt;', $v->key2);
@@ -205,6 +243,40 @@ HTML;
             'title' => 'Title',
             'body'  => 'Body'
         ));
+
+        $this->assertType('Iota_View', $result);
+        $this->assertNotSame($result, $v);
+        $this->assertEquals('Title', $result->title);
+        $this->assertEquals('Body', $result->body);
+    }
+
+    public function testSubviewSetsPropertiesFromObject()
+    {
+        $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
+
+        $test = new stdClass;
+        $test->title = 'Title';
+        $test->body  = 'Body';
+
+        $result = $v->subview(dirname(__FILE__).'/_files/viewTemplate2.phtml', $test);
+
+        $this->assertType('Iota_View', $result);
+        $this->assertNotSame($result, $v);
+        $this->assertEquals('Title', $result->title);
+        $this->assertEquals('Body', $result->body);
+    }
+
+    public function testSubviewSetsPropertiesFromIterator()
+    {
+        $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
+
+        $t = array(
+            'title' => 'Title',
+            'body'  => 'Body'
+        );
+        $test = new ArrayObject($t);
+
+        $result = $v->subview(dirname(__FILE__).'/_files/viewTemplate2.phtml', $test);
 
         $this->assertType('Iota_View', $result);
         $this->assertNotSame($result, $v);

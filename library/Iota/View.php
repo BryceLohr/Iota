@@ -100,14 +100,17 @@ class Iota_View
      * current one.
      *
      * @param string Path to view template
-     * @param array Asso. array of data for the view
+     * @param array|Iterable Optional key/value data for sub-view
      * @returns Iota_View
      * @throws none
      */
-    public function subview($template, array $data = array())
+    public function subview($template, $data = null)
     {
         $view = new self($template);
-        $view->bulkCopy($data);
+
+        if ($data) {
+            $view->import($data);
+        }
 
         return $view;
     }
@@ -128,8 +131,15 @@ class Iota_View
         extract(get_object_vars($this));
         unset($__template, $_raw);
 
+        // __toString() is not allowed to have exceptions thrown from within
         ob_start();
-        require $this->__template;
+        try {
+            require $this->__template;
+        } catch (Exception $e) {
+            $msg = "Uncaught exception '".get_class($e)."': ".$e->getMessage()."\n".
+                   $e->getTraceAsString();
+            trigger_error($msg, E_USER_ERROR);
+        }
         return ob_get_clean();
     }
 
@@ -165,14 +175,16 @@ class Iota_View
     }
 
     /**
-     * Convenience method to assign a whole array of data to the view in one 
-     * call.
+     * Convenience method to assign a whole set of data to the view in one call.  
+     * The given data must be an array or iterable object that maps keys to 
+     * values. This is equivilent to manually assigning each value; they get 
+     * escaped just as normal single assignments do.
      *
-     * @param array Assoc array of data; keys are mapped to properties
+     * @param array|Iterable Key/value pairs to copy into view
      * @returns void
      * @throws none
      */
-    public function bulkCopy(array $data)
+    public function import($data)
     {
         foreach ($data as $key => $val) {
             $this->$key = $val;

@@ -20,13 +20,13 @@ class Iota_Controller_Router
     public $routes;
 
     /**
-     * This URI prefix is stripped off the REQUEST_URI before doing the route 
-     * matching. This is useful when the site is in a subdirectory of the 
-     * webroot, and you don't want all your routes to have that subdir in them.
+     * Sets the base URL for the web application. This is stripped off beginning 
+     * of the REQUEST_URI prior to route matching. This way, you don't have to 
+     * manually write a common URL prefix into each and every route.
      *
      * @var string
      */
-    public $uriPrefix = null;
+    public $baseUrl = null;
 
 
     /**
@@ -72,13 +72,13 @@ class Iota_Controller_Router
             $path = $_SERVER['REQUEST_URI'];
         }
 
-        // If using the uriPrefix, only match if the current REQUEST_URI has the 
+        // If using the baseUrl, only match if the current REQUEST_URI has the 
         // prefix. Thereafter, all the routes will effectively be relative to 
         // the prefix.
-        if ($this->uriPrefix) {
-            if (0 === strpos($path, $this->uriPrefix)) {
+        if ($this->baseUrl) {
+            if (0 === strpos($path, $this->baseUrl)) {
                 // Remove the prefix from the path before route matching
-                $path = substr($path, strlen($this->uriPrefix));
+                $path = substr($path, strlen($this->baseUrl));
             } else {
                 return false;
             }
@@ -147,7 +147,7 @@ class Iota_Controller_Router
      * @returns string URL to request the given Controller
      * @throws Exception
      */
-    public function url($ctrl, array $parms = null, $idx = 0)
+    public function url($ctrl, array $parms = array(), $idx = 0)
     {
         // Find all the routes to the given controller
         $matches = array();
@@ -180,7 +180,7 @@ class Iota_Controller_Router
             $route .= '?' . http_build_query($parms);
         }
 
-        return $this->uriPrefix . $route;
+        return $this->baseUrl . $route;
     }
 
     /**
@@ -196,12 +196,12 @@ class Iota_Controller_Router
      *
      * @param string Name of the Controller, as specified in the routes
      * @param array Optional parameters to populate into URL
-     * @param bool Optional flag indicating HTTPS protocol (default: null)
      * @param int Optional route index when one Controller has several routes
+     * @param bool Optional flag indicating HTTPS protocol (default: null)
      * @returns string URL to request the given Controller
      * @throws none
      */
-    public function absUrl($ctrl, array $parms = null, $https = null, $idx = 0)
+    public function absUrl($ctrl, array $parms = array(), $idx = 0, $https = null)
     {
         // Auto-detect current HTTPS status by default
         if (null === $https) {

@@ -136,7 +136,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         );
 
         $r = new Iota_Controller_Router($routes);
-        $r->uriPrefix = '/test';
+        $r->baseUrl = '/test';
 
         $_SERVER['REQUEST_URI'] = '/test/static';
         $this->assertEquals('TestController1', $r->route());
@@ -153,7 +153,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         );
 
         $r = new Iota_Controller_Router($routes);
-        $r->uriPrefix = '/test';
+        $r->baseUrl = '/test';
 
         $_SERVER['REQUEST_URI'] = '/static';
         $this->assertFalse($r->route());
@@ -228,11 +228,11 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $actual);
 
         $expected = '/alias';
-        $actual   = $r->url('TestController', null, 1);
+        $actual   = $r->url('TestController', array(), 1);
         $this->assertEquals($expected, $actual);
 
         $expected = '/shortcut';
-        $actual   = $r->url('TestController', null, 2);
+        $actual   = $r->url('TestController', array(), 2);
         $this->assertEquals($expected, $actual);
     }
 
@@ -257,7 +257,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $_SERVER['HTTP_HOST'] = 'unit.tests';
 
         $expected = 'https://unit.tests/test/foo/bar';
-        $actual = $r->absUrl('TestController', array('var1'=>'foo', 'var2'=>'bar'), true);
+        $actual = $r->absUrl('TestController', array('var1'=>'foo', 'var2'=>'bar'), 0, true);
 
         $this->assertEquals($expected, $actual);
     }
@@ -275,16 +275,18 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
 
         $expected = 'http://unit.tests/test/foo/bar';
         $actual = $r->absUrl('TestController1', array('var1'=>'foo', 'var2'=>'bar'));
+        $this->assertEquals($expected, $actual);
 
         $_SERVER['HTTPS'] = 'off';
         $expected = 'http://unit.tests/test2/quux';
         $actual = $r->absUrl('TestController2', array('var1'=>'quux'));
+        $this->assertEquals($expected, $actual);
 
         $_SERVER['HTTPS'] = 'on';
         $expected = 'https://unit.tests/test/baz/bat';
         $actual = $r->absUrl('TestController1', array('var1'=>'baz', 'var2'=>'bat'));
-
         $this->assertEquals($expected, $actual);
+
         unset($_SERVER['HTTPS']);
     }
 
@@ -305,11 +307,11 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $actual);
 
         $expected = 'http://unit.tests/alias';
-        $actual   = $r->absUrl('TestController', null, false, 1);
+        $actual   = $r->absUrl('TestController', array(), 1, false);
         $this->assertEquals($expected, $actual);
 
         $expected = 'http://unit.tests/shortcut';
-        $actual   = $r->absUrl('TestController', null, false, 2);
+        $actual   = $r->absUrl('TestController', array(), 2, false);
         $this->assertEquals($expected, $actual);
     }
 }

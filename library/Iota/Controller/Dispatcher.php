@@ -62,7 +62,11 @@ class Iota_Controller_Dispatcher
             return $this->dispatch404();
         }
 
+        // Pass the new controller a reference to the router, so they can easily 
+        // generate URLs.
         $ctrl = new $ctrlName;
+        $ctrl->router = $this->router;
+
         $method = strtolower($_SERVER['REQUEST_METHOD']);
 
         // If there's no method to handle the request, we don't want to run the 

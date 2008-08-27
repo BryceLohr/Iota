@@ -45,6 +45,25 @@ class Iota_Controller_DispatcherTest extends PHPUnit_Framework_TestCase
         unset($GLOBALS['mockGetCalled']);
     }
 
+    public function testDispatchAssignsRouterToController()
+    {
+        $GLOBALS['router'] = $this->getMock('Iota_Controller_Router', array(), array(array()));
+        $GLOBALS['router']->expects($this->once())
+                          ->method('route')
+                          ->will($this->returnValue('MockController'));
+
+        $_SERVER['REQUEST_METHOD']  = 'POST';
+        $GLOBALS['differentRouter'] = false;
+
+        $d = new Iota_Controller_Dispatcher($GLOBALS['router']);
+        $d->dispatch();
+
+        if ($GLOBALS['differentRouter']) {
+            $this->fail('Dispatcher passed a different Router instance to Controller than given');
+        }
+        unset($GLOBALS['router'], $GLOBALS['differentRouter']);
+    }
+
     public function testDispatch404CallsConfiguredMethod()
     {
         $r = $this->getMock('Iota_Controller_Router', array(), array(array()));
@@ -130,6 +149,12 @@ class MockController
     public function get()
     {
         $GLOBALS['mockGetCalled'] = true;
+    }
+    public function post()
+    {
+        if ($GLOBALS['router'] !== $this->router) {
+            $GLOBALS['differentRouter'] = true;
+        }
     }
     public function do404()
     {

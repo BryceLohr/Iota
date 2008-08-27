@@ -24,22 +24,11 @@ set_include_path(
 require 'registerIotaAutoload.php';
 
 
-// This exception class represents PHP warnings and notices
-class EPhpMessage extends Exception
-{
-    public function __construct($msg, $code, $file, $line)
-    {
-        parent::__construct($msg, $code);
-        $this->file = $file;
-        $this->line = $line;
-    }
-}
-
 // Set up a custom error handler to turn all PHP warnings and notices into 
 // actual exceptions that can be caught and dealt with. 
 function test_error_handler($errno, $errstr, $errfile, $errline)
 {
-    throw new EPhpMessage($errstr, $errno, $errfile, $errline);
+    throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
 }
 set_error_handler('test_error_handler');
 

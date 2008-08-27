@@ -18,7 +18,7 @@ class Iota_Controller_Router_FileReaderTest extends PHPUnit_Framework_TestCase
         // Omitting argument should throw PHP Warning
         try {
             $fr = new Iota_Controller_Router_FileReader;
-        } catch (EPhpMessage $e) {
+        } catch (ErrorException $e) {
             // success
         }
 

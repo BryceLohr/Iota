@@ -18,7 +18,7 @@ class Iota_Controller_DispatcherTest extends PHPUnit_Framework_TestCase
         // Omitting the argument should throw a warning
         try {
             $d = new Iota_Controller_Dispatcher;
-        } catch (EPhpMessage $e) {
+        } catch (ErrorException $e) {
             // success
         }
 

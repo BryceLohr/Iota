@@ -47,22 +47,7 @@ class Iota_ViewTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $actual);
     }
 
-    public function testEscapeCastsNonEmptiesToString()
-    {
-        $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
-
-        $int   = 123;
-        $float = 3.14;
-        $bool  = true;
-        $obj   = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
-
-        $this->assertType('string', $v->escape($int));
-        $this->assertType('string', $v->escape($float));
-        $this->assertType('string', $v->escape($bool));
-        $this->assertType('string', $v->escape($obj));
-    }
-
-    public function testEscapePassesEmptiesThrough()
+    public function testEscapePassesEmptiesThroughUntouched()
     {
         $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
 
@@ -77,6 +62,19 @@ class Iota_ViewTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(false === $v->escape($bool));
         $this->assertTrue(null  === $v->escape($null));
         $this->assertTrue(''    === $v->escape($string));
+    }
+
+    public function testEscapePassesNonStringScalarsThroughUntouched()
+    {
+        $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
+
+        $int   = 123;
+        $float = 3.14;
+        $bool  = true;
+
+        $this->assertType('int',   $v->escape($int));
+        $this->assertType('float', $v->escape($float));
+        $this->assertType('bool',  $v->escape($bool));
     }
 
     public function testArraysAreRecursivelyEscaped()

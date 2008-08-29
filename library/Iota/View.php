@@ -209,10 +209,11 @@ class Iota_View
 
     /**
      * Escapes data for output into HTML. Automatically recursively escapes 
-     * arrays. Uses htmlentities() to do the escaping. Empty values are passed 
-     * straight through, unmodified, since escaping them is a waste of time. One 
-     * useful side-effect of this is that you can distinguish DB null values 
-     * from empty strings in the template.
+     * arrays. Uses htmlentities() to do the escaping. Empty and non-string 
+     * scalar values are passed straight through, unmodified, since escaping 
+     * them is a waste of time. One useful side-effect of this is that types are 
+     * preserved, so you can distinguish DB null values from empty strings in 
+     * the template (for example).
      *
      * @todo Array keys should probably also be escaped, and/or filtered
      *
@@ -222,7 +223,7 @@ class Iota_View
      */
     public function escape($data)
     {
-        if (empty($data)) {
+        if (empty($data) || is_scalar($data) && !is_string($data)) {
             return $data;
 
         } else if (is_array($data)) {

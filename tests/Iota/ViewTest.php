@@ -97,7 +97,7 @@ class Iota_ViewTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $actual);
     }
 
-    public function testSetPropertiesAreAutoEscaped()
+    public function testSetPropertiesAreAutoEscapedAsViewVars()
     {
         $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
 
@@ -115,8 +115,8 @@ class Iota_ViewTest extends PHPUnit_Framework_TestCase
             '&quot;'
         );
 
-        $this->assertEquals($expectedString, $v->testString);
-        $this->assertEquals($expectedArray,  $v->testArray);
+        $this->assertEquals($expectedString, $v->getVar('testString'));
+        $this->assertEquals($expectedArray,  $v->getVar('testArray'));
     }
 
     public function testImportCopiesArraysIntoView()
@@ -131,11 +131,11 @@ class Iota_ViewTest extends PHPUnit_Framework_TestCase
 
         $v->import($test);
 
-        $this->assertEquals('plain data', $v->key1);
-        $this->assertEquals('needs &lt;escaping&gt;', $v->key2);
+        $this->assertEquals('plain data', $v->getVar('key1'));
+        $this->assertEquals('needs &lt;escaping&gt;', $v->getVar('key2'));
 
         $expected = array('foo', '&quot;bar&quot;', 'dog'=>'cat');
-        $this->assertEquals($expected, $v->key3);
+        $this->assertEquals($expected, $v->getVar('key3'));
     }
 
     public function testImportCopiesObjectIntoView()
@@ -149,11 +149,11 @@ class Iota_ViewTest extends PHPUnit_Framework_TestCase
 
         $v->import($test);
 
-        $this->assertEquals('plain data', $v->key1);
-        $this->assertEquals('needs &lt;escaping&gt;', $v->key2);
+        $this->assertEquals('plain data', $v->getVar('key1'));
+        $this->assertEquals('needs &lt;escaping&gt;', $v->getVar('key2'));
 
         $expected = array('foo', '&quot;bar&quot;', 'dog'=>'cat');
-        $this->assertEquals($expected, $v->key3);
+        $this->assertEquals($expected, $v->getVar('key3'));
     }
 
     public function testImportCopiesIteratorIntoView()
@@ -169,11 +169,11 @@ class Iota_ViewTest extends PHPUnit_Framework_TestCase
 
         $v->import($test);
 
-        $this->assertEquals('plain data', $v->key1);
-        $this->assertEquals('needs &lt;escaping&gt;', $v->key2);
+        $this->assertEquals('plain data', $v->getVar('key1'));
+        $this->assertEquals('needs &lt;escaping&gt;', $v->getVar('key2'));
 
         $expected = array('foo', '&quot;bar&quot;', 'dog'=>'cat');
-        $this->assertEquals($expected, $v->key3);
+        $this->assertEquals($expected, $v->getVar('key3'));
     }
 
     public function testSetRawDoesNotEscape()
@@ -192,15 +192,15 @@ class Iota_ViewTest extends PHPUnit_Framework_TestCase
         $v->setRaw('testString', $str);
         $v->setRaw('testArray',  $arr);
 
-        $this->assertType('object', $v->testObj);
-        $this->assertSame($obj,     $v->testObj);
-        $this->assertType('string', $v->testString);
-        $this->assertEquals($str,   $v->testString);
-        $this->assertType('array',  $v->testArray);
-        $this->assertEquals($arr,   $v->testArray);
+        $this->assertType('object', $v->getRaw('testObj'));
+        $this->assertSame($obj,     $v->getRaw('testObj'));
+        $this->assertType('string', $v->getRaw('testString'));
+        $this->assertEquals($str,   $v->getRaw('testString'));
+        $this->assertType('array',  $v->getRaw('testArray'));
+        $this->assertEquals($arr,   $v->getRaw('testArray'));
     }
 
-    public function testPropertiesAreVariablesInTemplate()
+    public function testViewVarsAreVariablesInTemplate()
     {
         $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate2.phtml');
 
@@ -233,7 +233,7 @@ HTML;
         $this->assertNotSame($result, $v);
     }
 
-    public function testSubviewSetsPropertiesFromArray()
+    public function testSubviewSetsViewVarsFromArray()
     {
         $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
 
@@ -244,11 +244,11 @@ HTML;
 
         $this->assertType('Iota_View', $result);
         $this->assertNotSame($result, $v);
-        $this->assertEquals('Title', $result->title);
-        $this->assertEquals('Body', $result->body);
+        $this->assertEquals('Title', $result->getVar('title'));
+        $this->assertEquals('Body', $result->getVar('body'));
     }
 
-    public function testSubviewSetsPropertiesFromObject()
+    public function testSubviewSetsViewVarsFromObject()
     {
         $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
 
@@ -260,11 +260,11 @@ HTML;
 
         $this->assertType('Iota_View', $result);
         $this->assertNotSame($result, $v);
-        $this->assertEquals('Title', $result->title);
-        $this->assertEquals('Body', $result->body);
+        $this->assertEquals('Title', $result->getVar('title'));
+        $this->assertEquals('Body', $result->getVar('body'));
     }
 
-    public function testSubviewSetsPropertiesFromIterator()
+    public function testSubviewSetsViewVarsFromIterator()
     {
         $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
 
@@ -278,8 +278,8 @@ HTML;
 
         $this->assertType('Iota_View', $result);
         $this->assertNotSame($result, $v);
-        $this->assertEquals('Title', $result->title);
-        $this->assertEquals('Body', $result->body);
+        $this->assertEquals('Title', $result->getVar('title'));
+        $this->assertEquals('Body', $result->getVar('body'));
     }
 
     public function testIncludeJsAddsScriptPath()
@@ -420,14 +420,10 @@ HTML;
         $mockRouter->expects($this->exactly(3))
                    ->method('url');
 
-        $GLOBALS['router'] = $mockRouter;
-
         $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
 
         $v->url('ctrl');
         $v->url('ctrl', array('parm'=>'val'));
         $v->url('ctrl', array('parm'=>'val'), 1);
-
-        unset($GLOBALS['router']);
     }
 }

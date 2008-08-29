@@ -11,12 +11,26 @@
 class Iota_View
 {
     /**
-     * Path to template representing this view. Double underscore to protect it 
-     * a bit better from name collisions with user variables.
+     * All of the data assigned to the view through normal public property 
+     * assignment, which is automatically escaped.
+     *
+     * @var array
+     */
+    protected $_viewData = array();
+
+    /**
+     * Raw, unescaped data assigned through setRaw().
+     *
+     * @var array
+     */
+    protected $_rawData = array();
+
+    /**
+     * Path to template representing this view.
      *
      * @var string
      */
-    protected $__template;
+    protected $_template;
 
     /**
      * Array of <script src> tags that need to be inserted into the <head> 
@@ -74,13 +88,6 @@ class Iota_View
      */
     protected static $_addHeadCssOnce = array();
 
-    /**
-     * Internal flag used to tell __set() to skip escaping.
-     *
-     * @var bool
-     */
-    private $_raw = false;
-
 
     /**
      * Constructor
@@ -91,7 +98,7 @@ class Iota_View
      */
     public function __construct($template)
     {
-        $this->__template = $template;
+        $this->_template = $template;
     }
 
     /**
@@ -117,8 +124,8 @@ class Iota_View
 
     /**
      * Includes the current template, and returns its output as a string. All of 
-     * this object's public properties are provided as direct local variables to 
-     * the included script.
+     * assigned template variables are provided as direct local variables to the 
+     * included script.
      *
      * @param void
      * @returns string Rendered template content
@@ -126,15 +133,15 @@ class Iota_View
      */
     public function __toString()
     {
-        // TODO: Find a quick, efficient way to get all the *public* properties 
-        // as an array. This unset is a maintenance problem...
-        extract(get_object_vars($this));
-        unset($__template, $_raw);
+        // Extract both the raw data and escaped data into the local scope. We 
+        // overwrite raw data with escaped data on name conflicts, to be safe.
+        extract($this->_rawData);
+        extract($this->_viewData);
 
         // __toString() is not allowed to have exceptions thrown from within
         ob_start();
         try {
-            require $this->__template;
+            require $this->_template;
         } catch (Exception $e) {
             $msg = "Uncaught exception '".get_class($e)."': ".$e->getMessage()."\n".
                    $e->getTraceAsString();
@@ -154,23 +161,16 @@ class Iota_View
      */
     public function __set($name, $value)
     {
-        // Allow raw, unescaped values to be assigned
-        if ($this->_raw) {
-            $this->$name = $value;
-            $this->_raw  = false;
-            return;
-        }
-
         // If the value is an instance of this class, we go ahead and convert it 
         // to a string early. By rendering nested views "inside-out" as much as 
         // possible, we give the sub-views a chance to set placeholder values 
         // that the outer views can pick up.
         if ($value instanceof self) {
-            $this->$name = (string) $value;
+            $this->_viewData[$name] = (string) $value;
         }
         // Otherwise, escape and assign the value
         else {
-            $this->$name = $this->escape($value);
+            $this->_viewData[$name] = $this->escape($value);
         }
     }
 
@@ -186,25 +186,12 @@ class Iota_View
      */
     public function import($data)
     {
+        // Note: Don't use array_merge() or similar directly on $_viewData, 
+        // because the input may not be an array. Also, this method preserves 
+        // auto-escaping behaviour.
         foreach ($data as $key => $val) {
             $this->$key = $val;
         }
-    }
-
-    /**
-     * Allows assigning data without escaping it first. Of course, it's your 
-     * responsibility to ensure the given data is safe for output before setting 
-     * it via this method.
-     *
-     * @param string Property name
-     * @param mixed Property value
-     * @returns void
-     * @throws none
-     */
-    public function setRaw($name, $value)
-    {
-        $this->_raw  = true;
-        $this->$name = $value;
     }
 
     /**
@@ -236,6 +223,49 @@ class Iota_View
             // Convert all quotes, use Latin-1 charset
             return htmlentities((string)$data, ENT_QUOTES, 'ISO-8859-1');
         }
+    }
+
+    /**
+     * Allows assigning data without escaping it first. Of course, it's your 
+     * responsibility to ensure the given data is safe for output before setting 
+     * it via this method. Also, be sure to use names that don't conflict with 
+     * those of the non-raw data, because the non-raw will overwrite the raw on 
+     * conflict.
+     *
+     * @param string Property name
+     * @param mixed Property value
+     * @returns void
+     * @throws none
+     */
+    public function setRaw($name, $value)
+    {
+        $this->_rawData[$name] = $value;
+    }
+
+    /**
+     * Provides access to raw template variables from outside this class.  
+     * Primarily useful for testing.
+     *
+     * @param string Raw variable name
+     * @returns mixed Given variable, or null if non-existant
+     * @throws none
+     */
+    public function getRaw($name)
+    {
+        return isset($this->_rawData[$name])? $this->_rawData[$name]: null;
+    }
+
+    /**
+     * Provides access to escaped template variables from outside this class.  
+     * Primarily useful for testing.
+     *
+     * @param string Template variable name
+     * @returns mixed Given variable, or null if non-existant
+     * @throws none
+     */
+    public function getVar($name)
+    {
+        return isset($this->_viewData[$name])? $this->_viewData[$name]: null;
     }
 
     /**

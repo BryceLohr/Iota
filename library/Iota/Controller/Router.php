@@ -49,10 +49,10 @@ class Iota_Controller_Router
             $this->routes = $routeSource->getRoutes();
         }
 
-        // Using $GLOBALS as a free, built-in registry. Put a reference here 
-        // that will be useful to other classes later
-        // @todo Someday move this to a real registry if gets problematic
-        $GLOBALS['router'] = $this;
+        // Store a reference so other code can access the router later.  
+        // Initially, this allows the View to easily use the router to create 
+        // URLs.
+        Iota_InternalRegistry::set('router', $this);
     }
 
     /**

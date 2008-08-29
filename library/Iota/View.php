@@ -369,10 +369,10 @@ class Iota_View
     }
 
     /**
-     * Convenience proxy to the router's url() method. Currently throws an 
-     * exception if the router isn't found in $GLOBALS.
-     *
-     * @todo Somehow handle missing router object more gracefully
+     * Convenience proxy to the router's url() method. Throws an exception if 
+     * the router isn't found in the internal registry, but this shouldn't ever 
+     * happen, since the router will always be created before any controller 
+     * (and hence before views).
      *
      * @param string Name of the Controller, as specified in the routes
      * @param array Optional parameters to populate into URL
@@ -381,14 +381,13 @@ class Iota_View
      */
     public function url()
     {
-        if (!isset($GLOBALS['router']) ||
-            !method_exists($GLOBALS['router'], 'url')) {
-            throw new Exception('No router object is in $GLOBALS[\'router\'], or that object does not have an url() method');
+        if (!$router = Iota_InternalRegistry::get('router')) {
+            throw new Exception('No router object found in the internal registry');
         }
 
         $args = func_get_args();
         return call_user_func_array(
-            array($GLOBALS['router'], 'url'),
+            array($router, 'url'),
             $args
         );
     }

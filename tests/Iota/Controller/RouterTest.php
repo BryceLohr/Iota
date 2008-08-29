@@ -19,7 +19,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $r = new Iota_Controller_Router($routes);
 
         $this->assertEquals($routes, $r->routes);
-        $this->assertSame($r, $GLOBALS['router']);
+        $this->assertSame($r, Iota_InternalRegistry::get('router'));
     }
 
     public function testConstructorTakesRouteObject()
@@ -34,7 +34,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $r = new Iota_Controller_Router($obj);
 
         $this->assertEquals($routes, $r->routes);
-        $this->assertSame($r, $GLOBALS['router']);
+        $this->assertSame($r, Iota_InternalRegistry::get('router'));
     }
 
     public function testRouteMatchesStaticRoute()

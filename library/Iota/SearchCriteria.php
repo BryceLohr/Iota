@@ -8,9 +8,6 @@
  * fields whose value is the empty string are automatically skipped, so no where 
  * clause term will be created for fields the user omitted.
  *
- * @todo       Escape values for DB
- * @todo       Base quote-wrapping on field data type
- *
  * @category   Iota
  * @package    SearchCriteria
  * @author     Bryce Lohr
@@ -121,17 +118,35 @@ class Iota_SearchCriteria
         return $this->_op('Contains', $field);
     }
 
-    public function between($field)
+    public function between($field, $openEnded = false)
     {
-        if (!isset($this->_input[$field.'_lo']) || '' === $this->_input[$field.'_lo'] ||
-            !isset($this->_input[$field.'_hi']) || '' === $this->_input[$field.'_hi']) {
-            return null;
+        if ($openEnded) {
+            if (isset($this->_input[$field.'_lo']) && '' !== $this->_input[$field.'_lo'] &&
+                (!isset($this->_input[$field.'_hi']) || '' === $this->_input[$field.'_hi'])) {
+                return new Iota_SearchCriteria_Term_Ge($field, $this->_input[$field.'_lo']);
+            } else 
+            if (isset($this->_input[$field.'_hi']) && '' !== $this->_input[$field.'_hi'] &&
+                (!isset($this->_input[$field.'_lo']) || '' === $this->_input[$field.'_lo'])) {
+                return new Iota_SearchCriteria_Term_Le($field, $this->_input[$field.'_hi']);
+            } else {
+                return new Iota_SearchCriteria_Term_Between(
+                    $field, 
+                    $this->_input[$field.'_lo'],
+                    $this->_input[$field.'_hi']
+                );
+            }
+
         } else {
-            return new Iota_SearchCriteria_Term_Between(
-                $field, 
-                $this->_input[$field.'_lo'],
-                $this->_input[$field.'_hi']
-            );
+            if (!isset($this->_input[$field.'_lo']) || '' === $this->_input[$field.'_lo'] ||
+                !isset($this->_input[$field.'_hi']) || '' === $this->_input[$field.'_hi']) {
+                return null;
+            } else {
+                return new Iota_SearchCriteria_Term_Between(
+                    $field, 
+                    $this->_input[$field.'_lo'],
+                    $this->_input[$field.'_hi']
+                );
+            }
         }
     }
 }

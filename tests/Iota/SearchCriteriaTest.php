@@ -148,6 +148,30 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
         );
     }
 
+    public function testBetweenAllowsOpenEndedRange()
+    {
+        // Omitting the low limit should still use the high limit
+        $this->userInput['field9_lo'] = '';
+        $c = new Iota_SearchCriteria($this->userInput);
+
+        $t = $c->between('field9', true);
+        $this->assertEquals(
+            "field9 <= 'input9_hival'", 
+            (string) $t
+        );
+
+        // Omitting the high limit should still use the low limit
+        $this->userInput['field9_lo'] = 'input9_loval';
+        $this->userInput['field9_hi'] = '';
+        $c = new Iota_SearchCriteria($this->userInput);
+
+        $t = $c->between('field9', true);
+        $this->assertEquals(
+            "field9 >= 'input9_loval'", 
+            (string) $t
+        );
+    }
+
     public function testTermsGroupedWithAndExpression()
     {
         $c = new Iota_SearchCriteria($this->userInput);

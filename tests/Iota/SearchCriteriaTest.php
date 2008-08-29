@@ -313,4 +313,44 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
             (string) $e
         );
     }
+
+    public function testTermQuoteValueQuotesValueAndEscapesChars()
+    {
+        $c = new Iota_SearchCriteria($this->userInput);
+        $t = $c->eq('field1');
+
+        // It gets real confusing with all the backslashes...
+        $expected = '\'Evil chars: \000\n\r\\\\\\\'\"\032\'';
+        $actual   = $t->quoteValue("Evil chars: \000\n\r\\'\"\032");
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    public function testBeginsEscapesLikeOperatorWildcards()
+    {
+        $c = new Iota_SearchCriteria($this->userInput);
+        $t = $c->begins('field1');
+
+        $expected = '\'Evil chars: \000\n\r\\\\\\\'\"\032%\'';
+        $actual   = $t->quoteValue("Evil chars: \000\n\r\\'\"\032");
+        $this->assertEquals($expected, $actual);
+
+        $expected = '\'A\\\\_Value\\\\%%\'';
+        $actual   = $t->quoteValue('A_Value%');
+        $this->assertEquals($expected, $actual);
+    }
+
+    public function testContainsEscapesLikeOperatorWildcards()
+    {
+        $c = new Iota_SearchCriteria($this->userInput);
+        $t = $c->contains('field1');
+
+        $expected = '\'%Evil chars: \000\n\r\\\\\\\'\"\032%\'';
+        $actual   = $t->quoteValue("Evil chars: \000\n\r\\'\"\032");
+        $this->assertEquals($expected, $actual);
+
+        $expected = '\'%A\\\\_Value\\\\%%\'';
+        $actual   = $t->quoteValue('A_Value%');
+        $this->assertEquals($expected, $actual);
+    }
 }

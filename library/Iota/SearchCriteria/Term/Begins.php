@@ -2,6 +2,8 @@
 /**
  * Begins term
  *
+ * @todo Somehow factor quoting/escaping out to DB abstraction layer
+ *
  * @category   Iota
  * @package    SearchCriteria
  * @author     Bryce Lohr
@@ -15,13 +17,15 @@ class Iota_SearchCriteria_Term_Begins extends Iota_SearchCriteria_Term_Abstract
     public function quoteValue($val)
     {
         /* Different DBs have different ways to escape LIKE pattern 
-         * meta-characters. Since both MySQL and PostgreSQL default to using a 
-         * backslash, that's what's used here. The backslash must be doubled 
-         * because their string literal parsers eat backslashes.
+         * meta-characters. This uses C-style escaping, used by MySQL and 
+         * PostgreSQL both by default. parent::quoteValue() will double the 
+         * backslashes, which is actually needed in this case, to get through 
+         * MySQL's and Pgsql's string literal parsers.
          *
          * Obviously, there's no elegant solution to the DB-specific syntax 
          * problem, so it's ignored for now.
          */
-        return str_replace(array('%','_'), array('\\%','\\_'), $val).'%'; 
+        $val = str_replace(array('%','_'), array('\\%','\\_'), $val) . '%';
+        return parent::quoteValue($val); 
     }
 }

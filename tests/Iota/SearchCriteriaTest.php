@@ -44,7 +44,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
         // Omitting the argument should cause a PHP warning
         try {
             $c = new Iota_SearchCriteria;
-        } catch (EPhpMessage $e) {
+        } catch (ErrorException $e) {
             // success
         }
     }

@@ -27,15 +27,15 @@ function iota_autoload($className)
     // about how close you match the class name to the file system name.
     $tryFile = str_replace('_', '/', $className).'.php';
 
-    // It's just an unfortunate reality of PHP that I have to manually 
-    // re-implement the include_path searching functionality simply to avoid 
-    // getting "file not found" warnings when looking for the file.
-    $inc = explode(PATH_SEPARATOR, get_include_path());
-    foreach ($inc as $path) {
-        if (is_readable($path.'/'.$tryFile)) {
-            include $tryFile;
-            break;
-        }
+    // Take advantage of fopen's 'use include_path" argument.
+    // My benchmarks show this is about 60x faster than manually looping over 
+    // the include_path and checking the file with is_readable(). Oddly, the 
+    // same benchmarks revealed the order of the include paths is irrelevent.
+    $fp = @fopen($tryfile, 'r', true);
+    if ($fp) {
+        fclose($fp);
+        unset($fp);
+        include $tryfile;
     }
 }
 

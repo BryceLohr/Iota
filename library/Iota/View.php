@@ -407,12 +407,12 @@ class Iota_View
      * @param string Name of the Controller, as specified in the routes
      * @param array Optional parameters to populate into URL
      * @returns string URL to request the given Controller
-     * @throws Exception
+     * @throws LogicException
      */
     public function url()
     {
         if (!$router = Iota_InternalRegistry::get('router')) {
-            throw new Exception('No router object found in the internal registry');
+            throw new LogicException('No router object found in the internal registry', 1);
         }
 
         $args = func_get_args();

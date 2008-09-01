@@ -34,8 +34,11 @@ class Iota_Controller_Router_FileReaderTest extends PHPUnit_Framework_TestCase
         try {
             $fr = new Iota_Controller_Router_FileReader(dirname(__FILE__).'/nonExistent');
             $fr->getRoutes();
-        } catch (Exception $e) {
-            // success
+        } catch (RuntimeException $e) {
+            if (1 != $e->getCode()) {
+                $this->fail('getRoutes() threw the wrong RuntimeException');
+            }
+            // else Success
         }
     }
 

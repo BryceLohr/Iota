@@ -40,13 +40,13 @@ class Iota_Controller_Router_FileReader
      *
      * @param void
      * @returns array
-     * @throws Exception
+     * @throws RuntimeException
      */
     public function getRoutes()
     {
         $fp = @fopen($this->path, 'r');
         if (!$fp) {
-            throw new Exception("File '{$this->path}' cannot be opened.");
+            throw new RuntimeException("File '{$this->path}' cannot be opened to read routes from.", 1);
         }
 
         $routes = array();

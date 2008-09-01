@@ -28,6 +28,10 @@ require 'registerIotaAutoload.php';
 // actual exceptions that can be caught and dealt with. 
 function test_error_handler($errno, $errstr, $errfile, $errline)
 {
+    // Allow "@" error-suppressed statements off scott-free
+    if (0 == error_reporting()) {
+        return true;
+    }
     throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
 }
 set_error_handler('test_error_handler');

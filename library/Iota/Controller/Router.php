@@ -145,7 +145,7 @@ class Iota_Controller_Router
      * @param array Optional parameters to populate into URL
      * @param int Optional route index when one Controller has several routes
      * @returns string URL to request the given Controller
-     * @throws Exception
+     * @throws DomainException
      */
     public function url($ctrl, array $parms = array(), $idx = 0)
     {
@@ -158,7 +158,7 @@ class Iota_Controller_Router
         }
 
         if (empty($matches)) {
-            throw new Exception("No route found for controller '$ctrl'");
+            throw new DomainException("No route found for controller '$ctrl'", 1);
         }
 
         // The caller may specify which of the matching routes to use

@@ -99,7 +99,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($r->route());
     }
 
-    public function testRouteVarsStoredInRequest()
+    public function testRouteVarsStoredInGet()
     {
         $routes = array('/test/:var1/:var2' => 'TestController');
         $r = new Iota_Controller_Router($routes);
@@ -107,10 +107,10 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $_SERVER['REQUEST_URI'] = '/test/foo/bar';
         $this->assertEquals('TestController', $r->route());
 
-        $this->assertArrayHasKey('var1', $_REQUEST);
-        $this->assertArrayHasKey('var2', $_REQUEST);
-        $this->assertEquals('foo', $_REQUEST['var1']);
-        $this->assertEquals('bar', $_REQUEST['var2']);
+        $this->assertArrayHasKey('var1', $_GET);
+        $this->assertArrayHasKey('var2', $_GET);
+        $this->assertEquals('foo', $_GET['var1']);
+        $this->assertEquals('bar', $_GET['var2']);
     }
 
     public function testMatchesMostSpecificRouteFirst()
@@ -124,8 +124,8 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $_SERVER['REQUEST_URI'] = '/test/static/foo';
         $this->assertEquals('TestController2', $r->route());
 
-        $this->assertArrayHasKey('var1', $_REQUEST);
-        $this->assertEquals('foo', $_REQUEST['var1']);
+        $this->assertArrayHasKey('var1', $_GET);
+        $this->assertEquals('foo', $_GET['var1']);
     }
 
     public function testMatchesUnderUriPrefix()

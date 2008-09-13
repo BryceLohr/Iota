@@ -130,8 +130,9 @@ class Iota_Controller_Router
             return false;
         }
 
-        // Turn the route variables into normal REQUEST vars
-        $_REQUEST = array_merge($_REQUEST, reset($matches[$minVars]));
+        // Turn the route variables into normal GET vars, since they came in on 
+        // the URL.
+        $_GET = array_merge($_GET, reset($matches[$minVars]));
         // Return the name of the matching Controller
         return key($matches[$minVars]);
     }

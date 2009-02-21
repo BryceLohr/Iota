@@ -266,14 +266,18 @@ class Iota_View
     }
 
     /**
-     * Provides access to escaped template variables from outside this class.  
-     * Primarily useful for testing.
+     * Allows assigned view template variables to be access just like public 
+     * properties. Provides symmetry since they're assigned like public 
+     * properties. Primarily useful for testing.
+     *
+     * Note that this only returns escaped data: raw data must be accessed via 
+     * getRaw(). 
      *
      * @param string Template variable name
      * @returns mixed Given variable, or null if non-existant
      * @throws none
      */
-    public function getVar($name)
+    public function __get($name)
     {
         return isset($this->_viewData[$name])? $this->_viewData[$name]: null;
     }

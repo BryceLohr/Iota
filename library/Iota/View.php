@@ -113,7 +113,10 @@ class Iota_View
      */
     public function subview($template, $data = null)
     {
-        $view = new self($template);
+        // Need the runtime class name, so this instantiates the current 
+        // subclass (if any)
+        $class = get_class($this);
+        $view  = new $class($template);
 
         if ($data) {
             $view->import($data);
@@ -196,11 +199,17 @@ class Iota_View
 
     /**
      * Escapes data for output into HTML. Automatically recursively escapes 
-     * arrays. Uses htmlentities() to do the escaping. Empty and non-string 
-     * scalar values are passed straight through, unmodified, since escaping 
-     * them is a waste of time. One useful side-effect of this is that types are 
-     * preserved, so you can distinguish DB null values from empty strings in 
-     * the template (for example).
+     * arrays. Uses htmlentities() to do the escaping. Empties, non-string 
+     * scalar values, and objects are all passed straight through, unmodified.  
+     * Escaping empties is a waste of time, and nulls, bools, ints, etc. can't 
+     * possibly contain malicious characters. Objects are preserved in order to  
+     * allow data model objects to be passed to the view. We have to treat them 
+     * as opaque blobs, and leave it to the template author to escape the right  
+     * things.
+     *
+     * One useful side-effect of this is that types are preserved, so you can 
+     * distinguish DB null values from empty strings in the template (for 
+     * example).
      *
      * @todo Array keys should probably also be escaped, and/or filtered
      *
@@ -210,7 +219,8 @@ class Iota_View
      */
     public function escape($data)
     {
-        if (empty($data) || is_scalar($data) && !is_string($data)) {
+        // Whitelist the specific types of data "safe" to pass through unchanged
+        if (empty($data) || (is_scalar($data) && !is_string($data)) || is_object($data)) {
             return $data;
 
         } else if (is_array($data)) {

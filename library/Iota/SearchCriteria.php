@@ -68,13 +68,40 @@ class Iota_SearchCriteria
         }
     }
 
+    /**
+     * Dynamically creates an operator object for the given field. Accepts field 
+     * names in "alias.field" or "field" (without alias) format. When given 
+     * "alias.field" format, it looks for "alias-field" in the input. If that's 
+     * not found, it looks for "field", without the alias. Uses the first match.
+     *
+     * @param string Operator name (must match Term class suffix)
+     * @param string Field name
+     * @returns Iota_SearchCriteria_Term_Abstract
+     * @throws none
+     */
     protected function _op($op, $field)
     {
-        if (!isset($this->_input[$field]) || '' === $this->_input[$field]) {
+        $alias = '';
+        $match = '';
+        $value = '';
+
+        if (false !== strpos($field, '.')) {
+            list($alias, $match) = explode('.', $field);
+        } else {
+            $match = $field;
+        }
+
+        if ($alias && isset($this->_input[$alias.'-'.$match])) {
+            $value = $this->_input[$alias.'-'.$match];
+        } else if (isset($this->_input[$match])) {
+            $value = $this->_input[$match];
+        }
+
+        if ('' === $value) {
             return null;
         } else {
             $class = 'Iota_SearchCriteria_Term_'.$op;
-            return new $class($field, $this->_input[$field]);
+            return new $class($field, $value);
         }
     }
 
@@ -120,32 +147,38 @@ class Iota_SearchCriteria
 
     public function between($field, $openEnded = false)
     {
+        $alias   = '';
+        $loField = $field.'_lo';
+        $hiField = $field.'_hi';
+
+        if (false !== strpos($loField, '.')) {
+            list($alias, $loField) = explode('.', $loField);
+        }
+        if (false !== strpos($hiField, '.')) {
+            list($alias, $hiField) = explode('.', $hiField);
+        }
+
+        $loValue = $alias && isset($this->_input[$alias.'-'.$loField])? $this->_input[$alias.'-'.$loField]:
+                   (isset($this->_input[$loField])? $this->_input[$loField]: '');
+        $hiValue = $alias && isset($this->_input[$alias.'-'.$hiField])? $this->_input[$alias.'-'.$hiField]:
+                   (isset($this->_input[$hiField])? $this->_input[$hiField]: '');
+
         if ($openEnded) {
-            if (isset($this->_input[$field.'_lo']) && '' !== $this->_input[$field.'_lo'] &&
-                (!isset($this->_input[$field.'_hi']) || '' === $this->_input[$field.'_hi'])) {
-                return new Iota_SearchCriteria_Term_Ge($field, $this->_input[$field.'_lo']);
-            } else 
-            if (isset($this->_input[$field.'_hi']) && '' !== $this->_input[$field.'_hi'] &&
-                (!isset($this->_input[$field.'_lo']) || '' === $this->_input[$field.'_lo'])) {
-                return new Iota_SearchCriteria_Term_Le($field, $this->_input[$field.'_hi']);
+            if ('' === $loValue && '' === $hiValue) {
+                return null;
+            } else if ($loValue && '' === $hiValue) {
+                return new Iota_SearchCriteria_Term_Ge($field, $loValue);
+            } else if ('' === $loValue && $hiValue) {
+                return new Iota_SearchCriteria_Term_Le($field, $hiValue);
             } else {
-                return new Iota_SearchCriteria_Term_Between(
-                    $field, 
-                    $this->_input[$field.'_lo'],
-                    $this->_input[$field.'_hi']
-                );
+                return new Iota_SearchCriteria_Term_Between($field, $loValue, $hiValue);
             }
 
         } else {
-            if (!isset($this->_input[$field.'_lo']) || '' === $this->_input[$field.'_lo'] ||
-                !isset($this->_input[$field.'_hi']) || '' === $this->_input[$field.'_hi']) {
+            if ('' === $loValue || '' === $hiValue) {
                 return null;
             } else {
-                return new Iota_SearchCriteria_Term_Between(
-                    $field, 
-                    $this->_input[$field.'_lo'],
-                    $this->_input[$field.'_hi']
-                );
+                return new Iota_SearchCriteria_Term_Between($field, $loValue, $hiValue);
             }
         }
     }

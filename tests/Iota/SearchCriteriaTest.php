@@ -172,6 +172,32 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
         );
     }
 
+    public function testAliasedFieldMatchesAliasInInput()
+    {
+        $input = array('alias-field'=>'value');
+
+        $c = new Iota_SearchCriteria($input);
+        $t = $c->eq('alias.field');
+
+        $this->assertEquals(
+            "alias.field = 'value'",
+            (string) $t
+        );
+    }
+
+    public function testAliasedFieldMatchesFieldWhenInputAliasIsMissing()
+    {
+        $input = array('field'=>'value');
+
+        $c = new Iota_SearchCriteria($input);
+        $t = $c->eq('alias.field');
+
+        $this->assertEquals(
+            "alias.field = 'value'",
+            (string) $t
+        );
+    }
+
     public function testTermsGroupedWithAndExpression()
     {
         $c = new Iota_SearchCriteria($this->userInput);

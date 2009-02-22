@@ -296,10 +296,8 @@ class Iota_View
             return implode("\n", self::$_includeJs);
         }
         if (!isset(self::$_includeJs[$path])) {
-            self::$_includeJs[$path] = sprintf(
-                '<script type="text/javascript" src="%s"></script>',
-                $this->escape($path)
-            );
+            self::$_includeJs[$path] = 
+                '<script type="text/javascript" src="'.$this->escape($path).'"></script>';
         }
     }
 
@@ -307,20 +305,24 @@ class Iota_View
      * Includes (once) the CSS file with the given path. Called with an argument 
      * sets it, without an argument retreives all the markup.
      *
+     * A media type for the CSS file can be specified with the second argument.  
+     * By default, no media type attribute is added.
+     *
      * @param string Path to CSS (as needed by the browser)
+     * @param string Optional CSS media type
      * @returns void
      * @throws none
      */
-    public function includeCss($path = false)
+    public function includeCss($path = false, $media = false)
     {
         if (!$path) {
             return implode("\n", self::$_includeCss);
         }
         if (!isset(self::$_includeCss[$path])) {
-            self::$_includeCss[$path] = sprintf(
-                '<link rel="stylesheet" type="text/css" href="%s">',
-                $this->escape($path)
-            );
+            self::$_includeCss[$path] = 
+                '<link rel="stylesheet" type="text/css"' .
+                ($media? ' media="'.$this->escape($media).'"': '') .
+                ' href="'.$this->escape($path).'">';
         }
     }
 
@@ -340,8 +342,8 @@ class Iota_View
             return self::$_addHeadJs;
         }
 
-        self::$_addHeadJs .= sprintf(
-            '<script type="text/javascript">%s</script>', $code);
+        self::$_addHeadJs .= 
+            '<script type="text/javascript">'.$code.'</script>';
     }
 
     /**
@@ -363,8 +365,8 @@ class Iota_View
         $key = hash('md5', $code);
 
         if (!isset(self::$_addHeadJsOnce[$key])) {
-            self::$_addHeadJsOnce[$key] = sprintf(
-                '<script type="text/javascript">%s</script>', $code);
+            self::$_addHeadJsOnce[$key] =
+                '<script type="text/javascript">'.$code.'</script>';
         }
     }
 
@@ -374,18 +376,24 @@ class Iota_View
      * code gets wraped in a <style> tag. Called with an argument sets it, 
      * without an argument retreives all the markup.
      *
+     * A media type for the CSS file can be specified with the second argument.  
+     * By default, no media type attribute is added.
+     *
      * @param string JavaScript code
+     * @param string Optional CSS media type
      * @returns void
      * @throws none
      */
-    public function addHeadCss($code = false)
+    public function addHeadCss($code = false, $media = false)
     {
         if (!$code) {
             return self::$_addHeadCss;
         }
 
-        self::$_addHeadCss .= sprintf(
-            '<style type="text/css">%s</style>', $code);
+        self::$_addHeadCss .=
+            '<style type="text/css"' .
+            ($media? ' media="'.$this->escape($media).'"': '') .
+            '>'.$code.'</style>';
     }
 
     /**
@@ -394,11 +402,15 @@ class Iota_View
      * gets wrapped in a <style> tag. Called with an argument sets it, without 
      * an argument retreives all the markup.
      *
+     * A media type for the CSS file can be specified with the second argument.  
+     * By default, no media type attribute is added.
+     *
      * @param string JavaScript code
+     * @param string Optional CSS media type
      * @returns void
      * @throws none
      */
-    public function addHeadCssOnce($code = false)
+    public function addHeadCssOnce($code = false, $media = false)
     {
         if (!$code) {
             return implode("\n", self::$_addHeadCssOnce);
@@ -407,8 +419,10 @@ class Iota_View
         $key = hash('md5', $code);
 
         if (!isset(self::$_addHeadCssOnce[$key])) {
-            self::$_addHeadCssOnce[$key] = sprintf(
-                '<style type="text/css">%s</style>', $code);
+            self::$_addHeadCssOnce[$key] =
+                '<style type="text/css"' .
+                ($media? ' media="'.$this->escape($media).'"': '') .
+                '>'.$code.'</style>';
         }
     }
 
@@ -434,5 +448,25 @@ class Iota_View
             array($router, 'url'),
             $args
         );
+    }
+
+    /**
+     * Clears all the static state maintained by this class, preventing test 
+     * fixture interaction from the static scoped data. This exists purely for 
+     * testing, since I have yet to find a need for it in practical application 
+     * code.
+     *
+     * @param void
+     * @returns void
+     * @throws none
+     */
+    public static function clearStaticState()
+    {
+        self::$_includeJs      = array();
+        self::$_includeCss     = array();
+        self::$_addHeadJs      = '';
+        self::$_addHeadJsOnce  = array();
+        self::$_addHeadCss     = '';
+        self::$_addHeadCssOnce = array();
     }
 }

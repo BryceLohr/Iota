@@ -13,6 +13,12 @@ require_once dirname(__FILE__).'/../testSetup.php';
 
 class Iota_ViewTest extends PHPUnit_Framework_TestCase
 {
+    public function tearDown()
+    {
+        // Prevents test interaction of the various Head JS/CSS methods
+        Iota_View::clearStaticState();
+    }
+
     public function testConstructorTakesTemplatePath()
     {
         // Make sure it takes an argument w/o complaining
@@ -328,6 +334,20 @@ HTML;
         $this->assertEquals($expected, $v->includeCss());
     }
 
+    public function testIncludeCssSupportsMediaType()
+    {
+        $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
+
+        $v->includeCss('/test.css', 'screen');
+        $expected = '<link rel="stylesheet" type="text/css" media="screen" href="/test.css">';
+        $this->assertEquals($expected, $v->includeCss());
+
+        $v->includeCss('/another.css', 'all');
+        $expected = '<link rel="stylesheet" type="text/css" media="screen" href="/test.css">'."\n".
+                    '<link rel="stylesheet" type="text/css" media="all" href="/another.css">';
+        $this->assertEquals($expected, $v->includeCss());
+    }
+
     public function testAddHeadJsAddsBlockOfJs()
     {
         $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
@@ -365,6 +385,19 @@ HTML;
 
         $v->addHeadCss('h1 {font-style: italic;}');
         $expected = '<style type="text/css">h1 {font-style: italic;}</style><style type="text/css">label {float: left;}</style><style type="text/css">h1 {font-style: italic;}</style>';
+        $this->assertEquals($expected, $v->addHeadCss());
+    }
+
+    public function testAddHeadCssSupportsMediaType()
+    {
+        $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
+
+        $v->addHeadCss('h1 {font-style: italic;}', 'tv');
+        $expected = '<style type="text/css" media="tv">h1 {font-style: italic;}</style>';
+        $this->assertEquals($expected, $v->addHeadCss());
+
+        $v->addHeadCss('label {float: left;}', 'all');
+        $expected = '<style type="text/css" media="tv">h1 {font-style: italic;}</style><style type="text/css" media="all">label {float: left;}</style>';
         $this->assertEquals($expected, $v->addHeadCss());
     }
 
@@ -411,6 +444,20 @@ HTML;
         $v->addHeadCssOnce('h1 {font-style: italic;}');
         $expected = '<style type="text/css">h1 {font-style: italic;}</style>'."\n".
                     '<style type="text/css">label {float: left;}</style>';
+        $this->assertEquals($expected, $v->addHeadCssOnce());
+    }
+
+    public function testAddHeadCssOnceSupportsMediaType()
+    {
+        $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
+
+        $v->addHeadCssOnce('h1 {font-style: italic;}', 'all');
+        $expected = '<style type="text/css" media="all">h1 {font-style: italic;}</style>';
+        $this->assertEquals($expected, $v->addHeadCssOnce());
+
+        $v->addHeadCssOnce('label {float: left;}', 'tty');
+        $expected = '<style type="text/css" media="all">h1 {font-style: italic;}</style>'."\n".
+                    '<style type="text/css" media="tty">label {float: left;}</style>';
         $this->assertEquals($expected, $v->addHeadCssOnce());
     }
 

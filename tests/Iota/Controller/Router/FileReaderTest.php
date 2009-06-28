@@ -21,33 +21,27 @@ class Iota_Controller_Router_FileReaderTest extends PHPUnit_Framework_TestCase
         } catch (ErrorException $e) {
             // success
         }
-
-        $expected = dirname(__FILE__).'/_files/testRoutes.txt';
-
-        $fr = new Iota_Controller_Router_FileReader($expected);
-
-        $this->assertEquals($expected, $fr->path);
     }
 
-    public function testGetRoutesThrowsIfCantOpenFile()
+    public function testThrowsIfCantOpenFile()
     {
         try {
             $fr = new Iota_Controller_Router_FileReader(dirname(__FILE__).'/nonExistent');
-            $fr->getRoutes();
+            $fr->routes();
         } catch (RuntimeException $e) {
             if (1 != $e->getCode()) {
-                $this->fail('getRoutes() threw the wrong RuntimeException');
+                $this->fail('routes() threw the wrong RuntimeException');
             }
             // else Success
         }
     }
 
-    public function testGetRoutesReadsFileAndReturnsRouteArray()
+    public function testReadsFileAndReturnsRouteArray()
     {
         $fr = new Iota_Controller_Router_FileReader(dirname(__FILE__).'/_files/testRoutes.txt');
         
         $expected = array('/this/is/a/valid/route' => 'MapsToThisController');
-        $actual = $fr->getRoutes();
+        $actual = $fr->routes();
 
         $this->assertEquals($expected, $actual);
     }

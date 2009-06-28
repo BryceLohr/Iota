@@ -21,7 +21,7 @@ class Iota_Controller_Router_FileReader
      *
      * @var string
      */
-    public $path;
+    protected $_path;
 
 
     /**
@@ -31,7 +31,7 @@ class Iota_Controller_Router_FileReader
      */
     public function __construct($path)
     {
-        $this->path = $path;
+        $this->_path = $path;
     }
 
     /**
@@ -42,11 +42,11 @@ class Iota_Controller_Router_FileReader
      * @returns array
      * @throws RuntimeException
      */
-    public function getRoutes()
+    public function routes()
     {
-        $fp = @fopen($this->path, 'r');
+        $fp = @fopen($this->_path, 'r');
         if (!$fp) {
-            throw new RuntimeException("File '{$this->path}' cannot be opened to read routes from.", 1);
+            throw new RuntimeException("File '{$this->_path}' cannot be opened to read routes from.", 1);
         }
 
         $routes = array();

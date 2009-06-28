@@ -17,7 +17,7 @@ class Iota_Controller_Router
      *
      * @var array
      */
-    public $routes;
+    protected $_routes;
 
     /**
      * Sets the base URL for the web application. This is stripped off beginning 
@@ -26,13 +26,14 @@ class Iota_Controller_Router
      *
      * @var string
      */
-    public $baseUrl = null;
+    protected $_baseUrl;
 
 
     /**
-     * Can take either an array, which must be in the format described above for 
-     * the $routes property, or any object that provides a "getRoutes" method.  
-     * This "getRoutes" method must return an array in the appropriate format.
+     * Can take either an array, which must be in the format described for the
+     * $_routes property, or any object that provides a routes() method. That 
+     * routes() method must return an array in the same format expected by this 
+     * class.
      *
      * @param array|object The source of the routes
      * @returns void
@@ -41,18 +42,50 @@ class Iota_Controller_Router
     public function __construct($routeSource)
     {
         if (is_array($routeSource)) {
-            $this->routes = $routeSource;
+            $this->routes($routeSource);
         }
         // "Duck typing" is much easier and more flexible for this simple case 
         // than having to create a full-blown interface.
-        else if (is_object($routeSource) && method_exists($routeSource, 'getRoutes')) {
-            $this->routes = $routeSource->getRoutes();
+        else if (is_object($routeSource) && method_exists($routeSource, 'routes')) {
+            $this->routes($routeSource->routes());
         }
 
         // Store a reference so other code can access the router later.  
         // Initially, this allows the View to easily use the router to create 
         // URLs.
         Iota_InternalRegistry::set('router', $this);
+    }
+
+    /**
+     * Accessor method for the $_routes property
+     *
+     * @param array Array of routes
+     * @returns array Array of routes
+     * @throws none
+     */
+    public function routes(array $routes = null)
+    {
+        if (null === $routes) {
+            return $this->_routes;
+        } else {
+            $this->_routes = $routes;
+        }
+    }
+
+    /**
+     * Accessor method for the $_baseUrl property
+     *
+     * @param string Base URL
+     * @returns string Base URL
+     * @throws none
+     */
+    public function baseUrl($url = null)
+    {
+        if (null === $url) {
+            return $this->_baseUrl;
+        } else {
+            $this->_baseUrl = $url;
+        }
     }
 
     /**
@@ -75,18 +108,18 @@ class Iota_Controller_Router
         // If using the baseUrl, only match if the current REQUEST_URI has the 
         // prefix. Thereafter, all the routes will effectively be relative to 
         // the prefix.
-        if ($this->baseUrl) {
-            if (0 === strpos($path, $this->baseUrl)) {
+        if ($this->_baseUrl) {
+            if (0 === strpos($path, $this->_baseUrl)) {
                 // Remove the prefix from the path before route matching
-                $path = substr($path, strlen($this->baseUrl));
+                $path = substr($path, strlen($this->_baseUrl));
             } else {
                 return false;
             }
         }
 
         // Try for instant static route match
-        if (array_key_exists($path, $this->routes)) {
-            return $this->routes[$path];
+        if (array_key_exists($path, $this->_routes)) {
+            return $this->_routes[$path];
         }
 
         // Parse the path and try to match it to a route
@@ -95,7 +128,7 @@ class Iota_Controller_Router
         $matches = array();
         $minVars = PHP_INT_MAX;
 
-        foreach ($this->routes as $route => $ctrl) {
+        foreach ($this->_routes as $route => $ctrl) {
 
             // Static routes would have already matched, if possible
             if (false === strpos($route, ':')) continue;
@@ -152,7 +185,7 @@ class Iota_Controller_Router
     {
         // Find all the routes to the given controller
         $matches = array();
-        foreach ($this->routes as $route => $test) {
+        foreach ($this->_routes as $route => $test) {
             if ($ctrl == $test) {
                 $matches[] = $route;
             }
@@ -181,7 +214,7 @@ class Iota_Controller_Router
             $route .= '?' . http_build_query($parms);
         }
 
-        return $this->baseUrl . $route;
+        return $this->_baseUrl . $route;
     }
 
     /**

@@ -18,7 +18,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $routes = array('/test' => 'TestController');
         $r = new Iota_Controller_Router($routes);
 
-        $this->assertEquals($routes, $r->routes);
+        $this->assertEquals($routes, $r->routes());
         $this->assertSame($r, Iota_InternalRegistry::get('router'));
     }
 
@@ -26,14 +26,14 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
     {
         $routes = array('/test' => 'TestController');
 
-        $obj = $this->getMock('stdClass', array('getRoutes'));
+        $obj = $this->getMock('stdClass', array('routes'));
         $obj->expects($this->once())
-            ->method('getRoutes')
+            ->method('routes')
             ->will($this->returnValue($routes));
 
         $r = new Iota_Controller_Router($obj);
 
-        $this->assertEquals($routes, $r->routes);
+        $this->assertEquals($routes, $r->routes());
         $this->assertSame($r, Iota_InternalRegistry::get('router'));
     }
 
@@ -128,7 +128,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('foo', $_GET['var1']);
     }
 
-    public function testMatchesUnderUriPrefix()
+    public function testMatchesUnderBaseUrl()
     {
         $routes = array(
             '/static'      => 'TestController1',
@@ -136,7 +136,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         );
 
         $r = new Iota_Controller_Router($routes);
-        $r->baseUrl = '/test';
+        $r->baseUrl('/test');
 
         $_SERVER['REQUEST_URI'] = '/test/static';
         $this->assertEquals('TestController1', $r->route());
@@ -145,7 +145,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('TestController2', $r->route());
     }
 
-    public function testNoMatchOutsideUriPrefix()
+    public function testNoMatchOutsideBaseUrl()
     {
         $routes = array(
             '/static'      => 'TestController1',
@@ -153,7 +153,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         );
 
         $r = new Iota_Controller_Router($routes);
-        $r->baseUrl = '/test';
+        $r->baseUrl('/test');
 
         $_SERVER['REQUEST_URI'] = '/static';
         $this->assertFalse($r->route());

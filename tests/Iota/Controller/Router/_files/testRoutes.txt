@@ -1,5 +1,9 @@
-# Comment line
+# This line is a comment
 
-/this/is/a/valid/route					MapsToThisController
-Only_one_column/gets_ignored
-										AlsoIgnored
+testRoute		/this/is/a/valid/route			MapsToThisController
+invalidLine
+				Only_one_column/gets_ignored
+												AlsoIgnored
+stillInvalid	/with/two/columns
+				junk_data_here					Doesn'tCount
+morejunk										won'twork

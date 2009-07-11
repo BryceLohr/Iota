@@ -40,7 +40,7 @@ class Iota_Controller_Router_FileReaderTest extends PHPUnit_Framework_TestCase
     {
         $fr = new Iota_Controller_Router_FileReader(dirname(__FILE__).'/_files/testRoutes.txt');
         
-        $expected = array('/this/is/a/valid/route' => 'MapsToThisController');
+        $expected = array('testRoute' => array('route'=>'/this/is/a/valid/route', 'controller'=>'MapsToThisController'));
         $actual = $fr->routes();
 
         $this->assertEquals($expected, $actual);

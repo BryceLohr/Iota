@@ -15,23 +15,8 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
 {
     public function testConstructorTakesRouteArray()
     {
-        $routes = array('/test' => 'TestController');
+        $routes = array('test' => array('route'=>'/test', 'controller' => 'TestController'));
         $r = new Iota_Controller_Router($routes);
-
-        $this->assertEquals($routes, $r->routes());
-        $this->assertSame($r, Iota_InternalRegistry::get('router'));
-    }
-
-    public function testConstructorTakesRouteObject()
-    {
-        $routes = array('/test' => 'TestController');
-
-        $obj = $this->getMock('stdClass', array('routes'));
-        $obj->expects($this->once())
-            ->method('routes')
-            ->will($this->returnValue($routes));
-
-        $r = new Iota_Controller_Router($obj);
 
         $this->assertEquals($routes, $r->routes());
         $this->assertSame($r, Iota_InternalRegistry::get('router'));
@@ -39,7 +24,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
 
     public function testRouteMatchesStaticRoute()
     {
-        $routes = array('/test' => 'TestController');
+        $routes = array('test' => array('route'=>'/test', 'controller' => 'TestController'));
         $r = new Iota_Controller_Router($routes);
 
         $_SERVER['REQUEST_URI'] = '/test';
@@ -48,9 +33,20 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('TestController', $actual);
     }
 
+    public function testRouteStoresMatchedRouteName()
+    {
+        $routes = array('test' => array('route'=>'/test', 'controller' => 'TestController'));
+        $r = new Iota_Controller_Router($routes);
+
+        $_SERVER['REQUEST_URI'] = '/test';
+
+        $this->assertEquals('TestController', $r->route());
+        $this->assertEquals('test', $r->matchedRoute());
+    }
+
     public function testRouteIgnoresQueryString1()
     {
-        $routes = array('/test' => 'TestController');
+        $routes = array('test' => array('route'=>'/test', 'controller' => 'TestController'));
         $r = new Iota_Controller_Router($routes);
 
         $_SERVER['REQUEST_URI'] = '/test?q=p&foo=bar';
@@ -61,7 +57,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
 
     public function testRouteReturnsFalseOnNoMatch()
     {
-        $routes = array('/test' => 'TestController');
+        $routes = array('test' => array('route'=>'/test', 'controller' => 'TestController'));
         $r = new Iota_Controller_Router($routes);
 
         $_SERVER['REQUEST_URI'] = '/foobar';
@@ -71,7 +67,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
 
     public function testRouteMatchesRouteWithVars()
     {
-        $routes = array('/test/:var1/:var2' => 'TestController');
+        $routes = array('test' => array('route'=>'/test/:var1/:var2', 'controller' => 'TestController'));
         $r = new Iota_Controller_Router($routes);
 
         $_SERVER['REQUEST_URI'] = '/test/foo/bar';
@@ -86,7 +82,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
 
     public function testRouteIgnoresQueryString2()
     {
-        $routes = array('/test/:var1/:var2' => 'TestController');
+        $routes = array('test' => array('route'=>'/test/:var1/:var2', 'controller' => 'TestController'));
         $r = new Iota_Controller_Router($routes);
 
         $_SERVER['REQUEST_URI'] = '/test/foo/bar?foo=bar&q=p';
@@ -101,7 +97,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
 
     public function testRouteVarsStoredInGet()
     {
-        $routes = array('/test/:var1/:var2' => 'TestController');
+        $routes = array('test' => array('route'=>'/test/:var1/:var2', 'controller' => 'TestController'));
         $r = new Iota_Controller_Router($routes);
 
         $_SERVER['REQUEST_URI'] = '/test/foo/bar';
@@ -116,13 +112,14 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
     public function testMatchesMostSpecificRouteFirst()
     {
         $routes = array(
-            '/test/:var1/:var2'  => 'TestController1',
-            '/test/static/:var1' => 'TestController2'
+            'lessSpecific' => array('route'=>'/test/:var1/:var2', 'controller' => 'TestController1'),
+            'moreSpecific' => array('route'=>'/test/static/:var1', 'controller' => 'TestController2')
         );
         $r = new Iota_Controller_Router($routes);
 
         $_SERVER['REQUEST_URI'] = '/test/static/foo';
         $this->assertEquals('TestController2', $r->route());
+        $this->assertEquals('moreSpecific', $r->matchedRoute());
 
         $this->assertArrayHasKey('var1', $_GET);
         $this->assertEquals('foo', $_GET['var1']);
@@ -131,8 +128,8 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
     public function testMatchesUnderBaseUrl()
     {
         $routes = array(
-            '/static'      => 'TestController1',
-            '/:with/:vars' => 'TestController2'
+            'static' => array('route'=>'/static', 'controller' => 'TestController1'),
+            'vars' => array('route'=>'/:with/:vars', 'controller' => 'TestController2')
         );
 
         $r = new Iota_Controller_Router($routes);
@@ -148,8 +145,8 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
     public function testNoMatchOutsideBaseUrl()
     {
         $routes = array(
-            '/static'      => 'TestController1',
-            '/:with/:vars' => 'TestController2'
+            'static' => array('route'=>'/static', 'controller' => 'TestController1'),
+            'vars' => array('route'=>'/:with/:vars', 'controller' => 'TestController2')
         );
 
         $r = new Iota_Controller_Router($routes);
@@ -164,11 +161,11 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
 
     public function testUrlRecreatesUrlToController1()
     {
-        $routes = array('/test/:var1/:var2' => 'TestController');
+        $routes = array('test' => array('route'=>'/test/:var1/:var2', 'controller' => 'TestController'));
         $r = new Iota_Controller_Router($routes);
 
         $expected = '/test/foo/bar';
-        $actual = $r->url('TestController', array('var1'=>'foo', 'var2'=>'bar'));
+        $actual = $r->url('test', array('var1'=>'foo', 'var2'=>'bar'));
 
         $this->assertEquals($expected, $actual);
     }
@@ -176,24 +173,24 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
     public function testUrlRecreatesUrlToController2()
     {
         // Ensure a parameter-less route works
-        $routes = array('/' => 'TestController');
+        $routes = array('test' => array('route'=>'/', 'controller' => 'TestController'));
         $r = new Iota_Controller_Router($routes);
 
         $expected = '/';
-        $actual = $r->url('TestController');
+        $actual = $r->url('test');
 
         $this->assertEquals($expected, $actual);
     }
 
     public function testUrlPutsLeftOverDataIntoQueryString()
     {
-        $routes = array('/test/:var1/:var2' => 'TestController');
+        $routes = array('test' => array('route'=>'/test/:var1/:var2', 'controller' => 'TestController'));
         $r = new Iota_Controller_Router($routes);
 
         $argsep = ini_get('arg_separator.output');
 
         $expected = '/test/foo/bar?q=p'.$argsep.'alpha=omega';
-        $actual = $r->url('TestController', 
+        $actual = $r->url('test', 
                           array('var1'=>'foo', 'var2'=>'bar', 'q'=>'p', 'alpha'=>'omega'));
 
         $this->assertEquals($expected, $actual);
@@ -201,63 +198,40 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
 
     public function testUrlEncodesParams()
     {
-        $routes = array('/test/:var1/:var2' => 'TestController');
+        $routes = array('test' => array('route'=>'/test/:var1/:var2', 'controller' => 'TestController'));
         $r = new Iota_Controller_Router($routes);
 
         $argsep = ini_get('arg_separator.output');
 
         $expected = '/test/a+path/a%3D%22b%22?q=%2Fhere'.$argsep.'alpha=there%3F';
-        $actual = $r->url('TestController', 
+        $actual = $r->url('test', 
                           array('var1'=>'a path', 'var2'=>'a="b"', 'q'=>'/here', 'alpha'=>'there?'));
 
         $this->assertEquals($expected, $actual);
     }
 
-    public function testSetWhichRouteUrlUsesForController1()
-    {
-        $routes = array(
-            '/resource' => 'TestController',
-            '/alias'    => 'TestController',
-            '/shortcut' => 'TestController'
-        );
-        $r = new Iota_Controller_Router($routes);
-
-        // Default behaviour uses first defined route for controller
-        $expected = '/resource';
-        $actual   = $r->url('TestController');
-        $this->assertEquals($expected, $actual);
-
-        $expected = '/alias';
-        $actual   = $r->url('TestController', array(), 1);
-        $this->assertEquals($expected, $actual);
-
-        $expected = '/shortcut';
-        $actual   = $r->url('TestController', array(), 2);
-        $this->assertEquals($expected, $actual);
-    }
-
     public function testAbsUrlReturnsAbsoluteUrl()
     {
-        $routes = array('/test/:var1/:var2' => 'TestController');
+        $routes = array('test' => array('route'=>'/test/:var1/:var2', 'controller' => 'TestController'));
         $r = new Iota_Controller_Router($routes);
 
         $_SERVER['HTTP_HOST'] = 'unit.tests';
 
         $expected = 'http://unit.tests/test/foo/bar';
-        $actual = $r->absUrl('TestController', array('var1'=>'foo', 'var2'=>'bar'));
+        $actual = $r->absUrl('test', array('var1'=>'foo', 'var2'=>'bar'));
 
         $this->assertEquals($expected, $actual);
     }
 
     public function testAbsUrlReturnsAbsoluteUrlWithHttps()
     {
-        $routes = array('/test/:var1/:var2' => 'TestController');
+        $routes = array('test' => array('route'=>'/test/:var1/:var2', 'controller' => 'TestController'));
         $r = new Iota_Controller_Router($routes);
 
         $_SERVER['HTTP_HOST'] = 'unit.tests';
 
         $expected = 'https://unit.tests/test/foo/bar';
-        $actual = $r->absUrl('TestController', array('var1'=>'foo', 'var2'=>'bar'), 0, true);
+        $actual = $r->absUrl('test', array('var1'=>'foo', 'var2'=>'bar'), true);
 
         $this->assertEquals($expected, $actual);
     }
@@ -265,8 +239,8 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
     public function testAbsUrlAutoDetectsCurrentHttps()
     {
         $routes = array(
-            '/test/:var1/:var2' => 'TestController1',
-            '/test2/:var1'      => 'TestController2'
+            'test1' => array('route'=>'/test/:var1/:var2', 'controller' => 'TestController1'),
+            'test2' => array('route'=>'/test2/:var1', 'controller' => 'TestController2')
         );
 
         $r = new Iota_Controller_Router($routes);
@@ -274,44 +248,19 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
         $_SERVER['HTTP_HOST'] = 'unit.tests';
 
         $expected = 'http://unit.tests/test/foo/bar';
-        $actual = $r->absUrl('TestController1', array('var1'=>'foo', 'var2'=>'bar'));
+        $actual = $r->absUrl('test1', array('var1'=>'foo', 'var2'=>'bar'));
         $this->assertEquals($expected, $actual);
 
         $_SERVER['HTTPS'] = 'off';
         $expected = 'http://unit.tests/test2/quux';
-        $actual = $r->absUrl('TestController2', array('var1'=>'quux'));
+        $actual = $r->absUrl('test2', array('var1'=>'quux'));
         $this->assertEquals($expected, $actual);
 
         $_SERVER['HTTPS'] = 'on';
         $expected = 'https://unit.tests/test/baz/bat';
-        $actual = $r->absUrl('TestController1', array('var1'=>'baz', 'var2'=>'bat'));
+        $actual = $r->absUrl('test1', array('var1'=>'baz', 'var2'=>'bat'));
         $this->assertEquals($expected, $actual);
 
         unset($_SERVER['HTTPS']);
-    }
-
-    public function testSetWhichRouteUrlUsesForController2()
-    {
-        $routes = array(
-            '/resource' => 'TestController',
-            '/alias'    => 'TestController',
-            '/shortcut' => 'TestController'
-        );
-        $r = new Iota_Controller_Router($routes);
-
-        $_SERVER['HTTP_HOST'] = 'unit.tests';
-
-        // Default behaviour uses first defined route for controller
-        $expected = 'http://unit.tests/resource';
-        $actual   = $r->absUrl('TestController');
-        $this->assertEquals($expected, $actual);
-
-        $expected = 'http://unit.tests/alias';
-        $actual   = $r->absUrl('TestController', array(), 1, false);
-        $this->assertEquals($expected, $actual);
-
-        $expected = 'http://unit.tests/shortcut';
-        $actual   = $r->absUrl('TestController', array(), 2, false);
-        $this->assertEquals($expected, $actual);
     }
 }

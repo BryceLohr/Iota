@@ -35,8 +35,8 @@ class Iota_Controller_Router_FileReader
     }
 
     /**
-     * Reads the routes file and creates an array, indexed by route, with the 
-     * value being the Controller class name.
+     * Reads the routes file and creates an array compatible with Iota_Router's 
+     * routes array.
      *
      * @param void
      * @returns array
@@ -52,15 +52,13 @@ class Iota_Controller_Router_FileReader
         $routes = array();
 
         while (!feof($fp)) {
-            $route = $ctrl = '';
+            $name = $route = $ctrl = '';
 
-            if (!fscanf($fp, '%s %s', $route, $ctrl)) continue;
+            if (3 != fscanf($fp, '%s %s %s', $name, $route, $ctrl)) continue;
 
-            // Skip empty lines and allow lines starting with '#' to be comments
-            if (empty($route) || empty($ctrl)) continue;
-            if ('#' == $route[0]) continue;
+            if ('#' == $name[0]) continue;
             
-            $routes[$route] = $ctrl;
+            $routes[$name] = array('route'=>$route, 'controller'=>$ctrl);
         }
         fclose($fp);
 

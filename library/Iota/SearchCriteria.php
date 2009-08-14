@@ -136,7 +136,7 @@ class Iota_SearchCriteria
             $value = $this->_input[$match];
         }
 
-        if ('' === $value) {
+        if ('' === $value || array() === $value) {
             return null;
         } else {
             $class = 'Iota_SearchCriteria_Term_'.$op;
@@ -174,6 +174,11 @@ class Iota_SearchCriteria
         return $this->_op('Lt', $field);
     }
 
+    public function in($field)
+    {
+        return $this->_op('In', $field);
+    }
+
     public function begins($field)
     {
         return $this->_op('Begins', $field);
@@ -204,6 +209,7 @@ class Iota_SearchCriteria
      * @param string Field name
      * @param bool Whether to allow an 'open-ended' expression
      * @returns Iota_SearchCriteria_Term_Between
+     * @throws none
      */
     public function between($field, $openEnded = false)
     {
@@ -241,5 +247,17 @@ class Iota_SearchCriteria
                 return new Iota_SearchCriteria_Term_Between($field, $loValue, $hiValue);
             }
         }
+    }
+
+    /**
+     * Literally passes through the given SQL.
+     *
+     * @param string SQL code
+     * @returns Iota_SearchCriteria_Term_Between
+     * @throws none
+     */
+    public function literal($sql)
+    {
+        return new Iota_SearchCriteria_Term_Literal($sql);
     }
 }

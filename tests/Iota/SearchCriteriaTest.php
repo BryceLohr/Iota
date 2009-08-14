@@ -29,10 +29,13 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
             'field8'    => 'input8',
             'field9_lo' => 'input9_loval',
             'field9_hi' => 'input9_hival',
+            'field10'   => array('a','b','\'escape me\''),
+            'field11'   => array('c'),
             'empty1'    => '',
             'empty2'    => '',
             'empty3_lo' => '',
-            'empty3_hi' => ''
+            'empty3_hi' => '',
+            'empty4'    => array(),
         );
     }
 
@@ -148,6 +151,39 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
         );
     }
 
+    public function testOperatorProducesSingleTerm10()
+    {
+        $c = new Iota_SearchCriteria($this->userInput);
+
+        $t = $c->in('field10');
+        $this->assertEquals(
+            "field10 IN ('a','b','\\'escape me\\'')",
+            (string) $t
+        );
+    }
+
+    public function testInOperatorResolvesToEqForNonArrayValue()
+    {
+        $c = new Iota_SearchCriteria($this->userInput);
+
+        $t = $c->in('field1');
+        $this->assertEquals(
+            "field1 = 'input1'",
+            (string) $t
+        );
+    } 
+
+    public function testInOperatorResolvesToEqForSingleElementArray()
+    {
+        $c = new Iota_SearchCriteria($this->userInput);
+
+        $t = $c->in('field11');
+        $this->assertEquals(
+            "field11 = 'c'",
+            (string) $t
+        );
+    } 
+
     public function testBetweenAllowsOpenEndedRange()
     {
         // Omitting the low limit should still use the high limit
@@ -168,6 +204,23 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
         $t = $c->between('field9', true);
         $this->assertEquals(
             "field9 >= 'input9_loval'", 
+            (string) $t
+        );
+    }
+
+    public function testLiteralReturnsSQLAsIs()
+    {
+        $c = new Iota_SearchCriteria($this->userInput);
+
+        $t = $c->literal('any text here');
+        $this->assertEquals(
+            'any text here',
+            (string) $t
+        );
+
+        $t = $c->literal("1'; SELECT developers, need_to_do_escaping, themselves");
+        $this->assertEquals(
+            "1'; SELECT developers, need_to_do_escaping, themselves",
             (string) $t
         );
     }
@@ -305,6 +358,9 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
         }
 
         $t = $c->between('empty3');
+        $this->assertEquals(null, $t);
+
+        $t = $c->in('empty4');
         $this->assertEquals(null, $t);
     }
 

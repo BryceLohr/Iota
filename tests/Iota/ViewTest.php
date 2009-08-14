@@ -13,12 +13,6 @@ require_once dirname(__FILE__).'/../testSetup.php';
 
 class Iota_ViewTest extends PHPUnit_Framework_TestCase
 {
-    public function tearDown()
-    {
-        // Prevents test interaction of the various Head JS/CSS methods
-        Iota_View::clearStaticState();
-    }
-
     public function testConstructorTakesTemplatePath()
     {
         // Make sure it takes an argument w/o complaining
@@ -288,6 +282,22 @@ HTML;
         $this->assertEquals('Body', $result->body);
     }
 
+    public function testChildViewsPlaceholdersAvailableInParentView()
+    {
+        $parent = new Iota_View(dirname(__FILE__).'/_files/parentView.phtml');
+        $child  = new Iota_View(dirname(__FILE__).'/_files/childView.phtml');
+        $parent->child = $child;
+
+        $actual = (string) $parent;
+        $expected = <<<TXT
+Children's placeholder values:
+From direct child 
+From sub view
+TXT;
+
+        $this->assertEquals($expected, $actual);
+    }
+
     public function testIncludeJsAddsScriptPath()
     {
         $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
@@ -360,11 +370,14 @@ HTML;
         $this->assertEquals($expected, $v->addHeadJs());
 
         $v->addHeadJs('alert("more");');
-        $expected = '<script type="text/javascript">alert("hi");</script><script type="text/javascript">alert("more");</script>';
+        $expected = '<script type="text/javascript">alert("hi");</script>'."\n".
+                    '<script type="text/javascript">alert("more");</script>';
         $this->assertEquals($expected, $v->addHeadJs());
 
         $v->addHeadJs('alert("hi");');
-        $expected = '<script type="text/javascript">alert("hi");</script><script type="text/javascript">alert("more");</script><script type="text/javascript">alert("hi");</script>';
+        $expected = '<script type="text/javascript">alert("hi");</script>'."\n".
+                    '<script type="text/javascript">alert("more");</script>'."\n".
+                    '<script type="text/javascript">alert("hi");</script>';
         $this->assertEquals($expected, $v->addHeadJs());
     }
 
@@ -380,11 +393,14 @@ HTML;
         $this->assertEquals($expected, $v->addHeadCss());
 
         $v->addHeadCss('label {float: left;}');
-        $expected = '<style type="text/css">h1 {font-style: italic;}</style><style type="text/css">label {float: left;}</style>';
+        $expected = '<style type="text/css">h1 {font-style: italic;}</style>'."\n".
+                    '<style type="text/css">label {float: left;}</style>';
         $this->assertEquals($expected, $v->addHeadCss());
 
         $v->addHeadCss('h1 {font-style: italic;}');
-        $expected = '<style type="text/css">h1 {font-style: italic;}</style><style type="text/css">label {float: left;}</style><style type="text/css">h1 {font-style: italic;}</style>';
+        $expected = '<style type="text/css">h1 {font-style: italic;}</style>'."\n".
+                    '<style type="text/css">label {float: left;}</style>'."\n".
+                    '<style type="text/css">h1 {font-style: italic;}</style>';
         $this->assertEquals($expected, $v->addHeadCss());
     }
 
@@ -397,7 +413,8 @@ HTML;
         $this->assertEquals($expected, $v->addHeadCss());
 
         $v->addHeadCss('label {float: left;}', 'all');
-        $expected = '<style type="text/css" media="tv">h1 {font-style: italic;}</style><style type="text/css" media="all">label {float: left;}</style>';
+        $expected = '<style type="text/css" media="tv">h1 {font-style: italic;}</style>'."\n".
+                    '<style type="text/css" media="all">label {float: left;}</style>';
         $this->assertEquals($expected, $v->addHeadCss());
     }
 
@@ -464,13 +481,24 @@ HTML;
     public function testUrlProxiesToRouterUrl()
     {
         $mockRouter = $this->getMock('Iota_Controller_Router', array('url'), array(array()));
-        $mockRouter->expects($this->exactly(3))
+        $mockRouter->expects($this->exactly(2))
                    ->method('url');
 
         $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
 
-        $v->url('ctrl');
-        $v->url('ctrl', array('parm'=>'val'));
-        $v->url('ctrl', array('parm'=>'val'), 1);
+        $v->url('routeName');
+        $v->url('routeName', array('parm'=>'val'));
+    }
+
+    public function testAbsUrlProxiesToRouterAbsUrl()
+    {
+        $mockRouter = $this->getMock('Iota_Controller_Router', array('absUrl'), array(array()));
+        $mockRouter->expects($this->exactly(2))
+                   ->method('absUrl');
+
+        $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
+
+        $v->absUrl('routeName');
+        $v->absUrl('routeName', array('parm'=>'val'));
     }
 }

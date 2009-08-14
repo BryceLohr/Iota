@@ -30,63 +30,21 @@ class Iota_View
      *
      * @var string
      */
-    protected $_template;
+    protected $_template = null;
 
     /**
-     * Array of <script src> tags that need to be inserted into the <head> 
-     * element of the output HTML. Static because it's meant to be used for the 
-     * whole response.
+     * The parent view this one is nested in (if any)
+     *
+     * @var Iota_View
+     */
+    protected $_parent = null;
+
+    /**
+     * Holds all the placeholder values
      *
      * @var array
-     * @static
      */
-    protected static $_includeJs = array();
-
-    /**
-     * Array of <link> tags that need to be inserted into the <head> element of 
-     * the output HTML. Static because it's meant to be used for the whole 
-     * response.
-     *
-     * @var array
-     * @static
-     */
-    protected static $_includeCss = array();
-
-    /**
-     * Raw JavaScript code that should be added to the <head> tag. Static 
-     * because it's meant to be used for the whole response.
-     *
-     * @var string
-     * @static
-     */
-    protected static $_addHeadJs = '';
-
-    /**
-     * Raw JavaScript code that should be added only once to the <head> tag.  
-     * Static because it's meant to be used for the whole response.
-     *
-     * @var array
-     * @static
-     */
-    protected static $_addHeadJsOnce = array();
-
-    /**
-     * Raw CSS code that should be added to the <head> tag. Static because it's 
-     * meant to be used for the whole response.
-     *
-     * @var string
-     * @static
-     */
-    protected static $_addHeadCss = '';
-
-    /**
-     * Raw CSS code that should be added only once to the <head> tag.  Static 
-     * because it's meant to be used for the whole response.
-     *
-     * @var array
-     * @static
-     */
-    protected static $_addHeadCssOnce = array();
+    protected $_placeholders = array();
 
 
     /**
@@ -99,6 +57,18 @@ class Iota_View
     public function __construct($template)
     {
         $this->_template = $template;
+    }
+
+    /**
+     * Sets the parent view instance for this instance
+     *
+     * @param Iota_View
+     * @returns void
+     * @throws none
+     */
+    public function setParent(Iota_View $parent)
+    {
+        $this->_parent = $parent;
     }
 
     /**
@@ -117,6 +87,7 @@ class Iota_View
         // subclass (if any)
         $class = get_class($this);
         $view  = new $class($template);
+        $view->setParent($this);
 
         if ($data) {
             $view->import($data);
@@ -136,8 +107,7 @@ class Iota_View
      */
     public function __toString()
     {
-        // Extract both the raw data and escaped data into the local scope. We 
-        // overwrite raw data with escaped data on name conflicts, to be safe.
+        // Overwrite raw data with the escaped on name conflicts, to be safe.
         extract($this->_rawData);
         extract($this->_viewData);
 
@@ -157,6 +127,11 @@ class Iota_View
      * Intercepts property assignments to provide automatic escaping and 
      * sub-view rendering.
      *
+     * If the value being set is an instance of this class (or a subclass), then 
+     * that subview's parent is set to this instance. That allows any 
+     * placeholders set while rendering the subview to be propagated up the 
+     * composite heirarchy, and be retrievable by ancester views.
+     *
      * @param string Property name
      * @param mixed Property value
      * @returns void
@@ -164,15 +139,10 @@ class Iota_View
      */
     public function __set($name, $value)
     {
-        // If the value is an instance of this class, we go ahead and convert it 
-        // to a string early. By rendering nested views "inside-out" as much as 
-        // possible, we give the sub-views a chance to set placeholder values 
-        // that the outer views can pick up.
-        if ($value instanceof self) {
+        if ($value instanceof $this) {
+            $value->setParent($this);
             $this->_viewData[$name] = (string) $value;
-        }
-        // Otherwise, escape and assign the value
-        else {
+        } else {
             $this->_viewData[$name] = $this->escape($value);
         }
     }
@@ -268,7 +238,7 @@ class Iota_View
     /**
      * Allows assigned view template variables to be access just like public 
      * properties. Provides symmetry since they're assigned like public 
-     * properties. Primarily useful for testing.
+     * properties.
      *
      * Note that this only returns escaped data: raw data must be accessed via 
      * getRaw(). 
@@ -283,6 +253,35 @@ class Iota_View
     }
 
     /**
+     * Sets a placeholder for retrieval in some parent view.
+     *
+     * @param string Placeholder name
+     * @param mixed Placeholder value
+     * @returns void
+     * @throws none
+     */
+    public function setPlaceholder($name, $value)
+    {
+        $this->_placeholders[$name] = $value;
+
+        if ($this->_parent) {
+            $this->_parent->setPlaceholder($name, $value);
+        }
+    }
+
+    /**
+     * Retrieves a placeholder value, or null if it doesn't exist.
+     *
+     * @param string Placeholder name
+     * @returns mixed Placeholder value
+     * @throws none
+     */
+    public function getPlaceholder($name)
+    {
+        return isset($this->_placeholders[$name])? $this->_placeholders[$name]: null;
+    }
+
+    /**
      * Includes (once) the JavaScript file with the given path. Called with an 
      * argument sets it, without an argument retreives all the markup.
      *
@@ -292,12 +291,17 @@ class Iota_View
      */
     public function includeJs($path = false)
     {
+        $includeJs = $this->getPlaceholder('__includeJs') 
+            or 
+        $includeJs = array();
+
         if (!$path) {
-            return implode("\n", self::$_includeJs);
+            return implode("\n", $includeJs);
         }
-        if (!isset(self::$_includeJs[$path])) {
-            self::$_includeJs[$path] = 
+        if (!isset($includeJs[$path])) {
+            $includeJs[$path] = 
                 '<script type="text/javascript" src="'.$this->escape($path).'"></script>';
+            $this->setPlaceholder('__includeJs', $includeJs);
         }
     }
 
@@ -315,14 +319,19 @@ class Iota_View
      */
     public function includeCss($path = false, $media = false)
     {
+        $includeCss = $this->getPlaceholder('__includeCss')
+            or
+        $includeCss = array();
+
         if (!$path) {
-            return implode("\n", self::$_includeCss);
+            return implode("\n", $includeCss);
         }
-        if (!isset(self::$_includeCss[$path])) {
-            self::$_includeCss[$path] = 
+        if (!isset($includeCss[$path])) {
+            $includeCss[$path] = 
                 '<link rel="stylesheet" type="text/css"' .
                 ($media? ' media="'.$this->escape($media).'"': '') .
                 ' href="'.$this->escape($path).'">';
+            $this->setPlaceholder('__includeCss', $includeCss);
         }
     }
 
@@ -338,12 +347,18 @@ class Iota_View
      */
     public function addHeadJs($code = false)
     {
+        $addHeadJs = $this->getPlaceholder('__addHeadJs')
+            or
+        $addHeadJs = array();
+
         if (!$code) {
-            return self::$_addHeadJs;
+            return implode("\n", $addHeadJs);
         }
 
-        self::$_addHeadJs .= 
+        $addHeadJs[] = 
             '<script type="text/javascript">'.$code.'</script>';
+
+        $this->setPlaceholder('__addHeadJs', $addHeadJs);
     }
 
     /**
@@ -358,15 +373,20 @@ class Iota_View
      */
     public function addHeadJsOnce($code = false)
     {
+        $addHeadJsOnce = $this->getPlaceholder('__addHeadJsOnce')
+            or
+        $addHeadJsOnce = array();
+
         if (!$code) {
-            return implode("\n", self::$_addHeadJsOnce);
+            return implode("\n", $addHeadJsOnce);
         }
 
         $key = hash('md5', $code);
 
-        if (!isset(self::$_addHeadJsOnce[$key])) {
-            self::$_addHeadJsOnce[$key] =
+        if (!isset($addHeadJsOnce[$key])) {
+            $addHeadJsOnce[$key] =
                 '<script type="text/javascript">'.$code.'</script>';
+            $this->setPlaceholder('__addHeadJsOnce', $addHeadJsOnce);
         }
     }
 
@@ -386,14 +406,20 @@ class Iota_View
      */
     public function addHeadCss($code = false, $media = false)
     {
+        $addHeadCss = $this->getPlaceholder('__addHeadCss')
+            or
+        $addHeadCss = array();
+
         if (!$code) {
-            return self::$_addHeadCss;
+            return implode("\n", $addHeadCss);
         }
 
-        self::$_addHeadCss .=
+        $addHeadCss[] =
             '<style type="text/css"' .
             ($media? ' media="'.$this->escape($media).'"': '') .
             '>'.$code.'</style>';
+
+        $this->setPlaceholder('__addHeadCss', $addHeadCss);
     }
 
     /**
@@ -412,61 +438,73 @@ class Iota_View
      */
     public function addHeadCssOnce($code = false, $media = false)
     {
+        $addHeadCssOnce = $this->getPlaceholder('__addHeadCssOnce')
+            or
+        $addHeadCssOnce = array();
+
         if (!$code) {
-            return implode("\n", self::$_addHeadCssOnce);
+            return implode("\n", $addHeadCssOnce);
         }
 
         $key = hash('md5', $code);
 
-        if (!isset(self::$_addHeadCssOnce[$key])) {
-            self::$_addHeadCssOnce[$key] =
+        if (!isset($addHeadCssOnce[$key])) {
+            $addHeadCssOnce[$key] =
                 '<style type="text/css"' .
                 ($media? ' media="'.$this->escape($media).'"': '') .
                 '>'.$code.'</style>';
+            $this->setPlaceholder('__addHeadCssOnce', $addHeadCssOnce);
         }
     }
 
     /**
-     * Convenience proxy to the router's url() method. Throws an exception if 
-     * the router isn't found in the internal registry, but this shouldn't ever 
-     * happen, since the router will always be created before any controller 
-     * (and hence before views).
+     * Convenience proxy to the router's url() method.
      *
-     * @param string Name of the Controller, as specified in the routes
+     * @param string Route name, as specified in the routes
      * @param array Optional parameters to populate into URL
-     * @returns string URL to request the given Controller
-     * @throws LogicException
+     * @returns string Filled-in URL of the given route
+     * @throws none
      */
     public function url()
+    {
+        $args = func_get_args();
+        return $this->_routerProxy('url', $args);
+    }
+
+    /**
+     * Convenience proxy to the router's absUrl() method.
+     *
+     * @param string Route name, as specified in the routes
+     * @param array Optional parameters to populate into URL
+     * @returns string Filled-in URL of the given route
+     * @throws none
+     */
+    public function absUrl()
+    {
+        $args = func_get_args();
+        return $this->_routerProxy('absUrl', $args);
+    }
+
+    /**
+     * Handles proxying methods to the Router. Throws an exception if the router 
+     * isn't found in the internal registry, but this shouldn't ever happen, 
+     * since the router will always be created before any controller (and hence 
+     * before views).
+     *
+     * @param string Router Method name
+     * @param array Arguments to pass to the method
+     * @returns mixed Whatever the proxied method returns
+     * @throws LogicException
+     */
+    protected function _routerProxy($method, $args)
     {
         if (!$router = Iota_InternalRegistry::get('router')) {
             throw new LogicException('No router object found in the internal registry', 1);
         }
 
-        $args = func_get_args();
         return call_user_func_array(
-            array($router, 'url'),
+            array($router, $method),
             $args
         );
-    }
-
-    /**
-     * Clears all the static state maintained by this class, preventing test 
-     * fixture interaction from the static scoped data. This exists purely for 
-     * testing, since I have yet to find a need for it in practical application 
-     * code.
-     *
-     * @param void
-     * @returns void
-     * @throws none
-     */
-    public static function clearStaticState()
-    {
-        self::$_includeJs      = array();
-        self::$_includeCss     = array();
-        self::$_addHeadJs      = '';
-        self::$_addHeadJsOnce  = array();
-        self::$_addHeadCss     = '';
-        self::$_addHeadCssOnce = array();
     }
 }

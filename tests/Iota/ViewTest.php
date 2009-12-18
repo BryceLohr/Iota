@@ -490,6 +490,21 @@ TXT;
         $v->url('routeName', array('parm'=>'val'));
     }
 
+    public function testUrlEscapesForHtml()
+    {
+        $testRoutes = array('routeName'=>array('route'=>'/path', 'controller'=>'Test'));
+        $mockRouter = $this->getMock('Iota_Controller_Router', null, array($testRoutes));
+        $mockRouter->expects($this->any())
+                   ->method('url');
+
+        $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
+
+        $actual = $v->url('routeName', array('parm'=>'val', 'foo'=>'bar'));
+        $expected = '/path?parm=val&amp;foo=bar';
+
+        $this->assertEquals($expected, $actual);
+    }
+
     public function testAbsUrlProxiesToRouterAbsUrl()
     {
         $mockRouter = $this->getMock('Iota_Controller_Router', array('absUrl'), array(array()));
@@ -500,5 +515,22 @@ TXT;
 
         $v->absUrl('routeName');
         $v->absUrl('routeName', array('parm'=>'val'));
+    }
+
+    public function testAbsUrlEscapesForHtml()
+    {
+        $_SERVER['HTTP_HOST'] = 'test';
+
+        $testRoutes = array('routeName'=>array('route'=>'/path', 'controller'=>'Test'));
+        $mockRouter = $this->getMock('Iota_Controller_Router', null, array($testRoutes));
+        $mockRouter->expects($this->any())
+                   ->method('absUrl');
+
+        $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
+
+        $actual = $v->absUrl('routeName', array('parm'=>'val', 'foo'=>'bar'));
+        $expected = 'http://test/path?parm=val&amp;foo=bar';
+
+        $this->assertEquals($expected, $actual);
     }
 }

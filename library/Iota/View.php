@@ -486,10 +486,10 @@ class Iota_View
     }
 
     /**
-     * Handles proxying methods to the Router. Throws an exception if the router 
-     * isn't found in the internal registry, but this shouldn't ever happen, 
-     * since the router will always be created before any controller (and hence 
-     * before views).
+     * Handles proxying the URL methods to the Router. Throws an exception if 
+     * the router isn't found in the internal registry, but this shouldn't 
+     * happen within expected usage, since the router will always be created 
+     * before any controller (and hence before views).
      *
      * @param string Router Method name
      * @param array Arguments to pass to the method
@@ -502,9 +502,13 @@ class Iota_View
             throw new LogicException('No router object found in the internal registry', 1);
         }
 
-        return call_user_func_array(
+        $url = call_user_func_array(
             array($router, $method),
             $args
         );
+
+        // The URLs from the router are properly URL-encoded, but we need to 
+        // escape the URL for HTML context when used in HTML views.
+        return $this->escape($url);
     }
 }

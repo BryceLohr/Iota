@@ -17,13 +17,14 @@ class Iota_Controller_DispatcherTest extends PHPUnit_Framework_TestCase
     {
         $emptyRouter = $this->getMock('Iota_Controller_Router', array(), array(array()));
 
-        // Omitting the argument should throw a warning
+        // Omitting the argument should throw a PHP error
         try {
             $d = new Iota_Controller_Dispatcher;
-        } catch (ErrorException $e) {
+        } catch (PHPUnit_Framework_Error $e) {
             // success
         }
 
+        // No error should be thrown this time
         $d = new Iota_Controller_Dispatcher($emptyRouter);
     }
 

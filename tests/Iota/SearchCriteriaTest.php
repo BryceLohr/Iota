@@ -44,10 +44,10 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
         // Make sure it takes an argument w/o complaining
         $c = new Iota_SearchCriteria($this->userInput);
 
-        // Omitting the argument should cause a PHP warning
+        // Omitting the argument should cause a PHP error
         try {
             $c = new Iota_SearchCriteria;
-        } catch (ErrorException $e) {
+        } catch (PHPUnit_Framework_Error $e) {
             // success
         }
     }

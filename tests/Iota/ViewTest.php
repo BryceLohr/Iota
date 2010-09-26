@@ -21,7 +21,7 @@ class Iota_ViewTest extends PHPUnit_Framework_TestCase
         // Omitting the argument should cause a PHP warning
         try {
             $v = new Iota_View;
-        } catch (ErrorException $e) {
+        } catch (PHPUnit_Framework_Error_Warning $e) {
             // success
         }
     }
@@ -493,9 +493,10 @@ TXT;
     public function testUrlEscapesForHtml()
     {
         $testRoutes = array('routeName'=>array('route'=>'/path', 'controller'=>'Test'));
-        $mockRouter = $this->getMock('Iota_Controller_Router', null, array($testRoutes));
+        $mockRouter = $this->getMock('Iota_Controller_Router', array(), array($testRoutes));
         $mockRouter->expects($this->any())
-                   ->method('url');
+                   ->method('url')
+                   ->will($this->returnValue('/path?parm=val&foo=bar'));
 
         $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
 
@@ -522,9 +523,10 @@ TXT;
         $_SERVER['HTTP_HOST'] = 'test';
 
         $testRoutes = array('routeName'=>array('route'=>'/path', 'controller'=>'Test'));
-        $mockRouter = $this->getMock('Iota_Controller_Router', null, array($testRoutes));
+        $mockRouter = $this->getMock('Iota_Controller_Router', array(), array($testRoutes));
         $mockRouter->expects($this->any())
-                   ->method('absUrl');
+                   ->method('absUrl')
+                   ->will($this->returnValue('http://test/path?parm=val&foo=bar'));
 
         $v = new Iota_View(dirname(__FILE__).'/_files/viewTemplate1.phtml');
 

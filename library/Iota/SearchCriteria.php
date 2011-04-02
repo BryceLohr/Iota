@@ -1,12 +1,17 @@
 <?php
+namespace Iota;
+
+use Iota\SearchCriteria\Expr;
+use Iota\SearchCriteria\Term;
+
 /**
  * Automates generating SQL "WHERE" clauses from form input. Very useful for 
  * search forms.
  *
  * This operates on an associative array of user input data, where the keys are 
- * the field names to use; such as that from a common form submission. Any 
- * fields whose value is the empty string are automatically skipped, so no where 
- * clause term will be created for fields the user omitted.
+ * the field names to use; just like a normal form submission. Any fields whose 
+ * value is the empty string are automatically skipped, so no where clause term 
+ * will be created for fields the user omitted.
  *
  * @category   Iota
  * @package    SearchCriteria
@@ -14,7 +19,7 @@
  * @copyright  Bryce Lohr 2008
  * @license    http://www.gearheadsoftware.com/bsd-license.txt
  */
-class Iota_SearchCriteria
+class SearchCriteria
 {
     /**
      * Assoc array of user input data
@@ -44,7 +49,7 @@ class Iota_SearchCriteria
      * of operators. Returns an object representing the AND expression.
      *
      * @param array|Iota_SearchCriteria_Term_Abstract
-     * @returns Iota_SearchCriteria_Expr_And
+     * @returns \Iota\SearchCriteria\Expr\And
      * @throws none
      */
     public function land()
@@ -54,7 +59,7 @@ class Iota_SearchCriteria
         $num  = count($args);
 
         if ($num > 1) {
-            return new Iota_SearchCriteria_Expr_And($args);
+            return new Expr\LogicalAnd($args);
         } else if ($num == 1) {
             return reset($args); // The exact index is unknown
         } else {
@@ -70,7 +75,7 @@ class Iota_SearchCriteria
      * of operators. Returns an object representing the OR expression.
      *
      * @param array|Iota_SearchCriteria_Term_Abstract
-     * @returns Iota_SearchCriteria_Expr_Or
+     * @returns \Iota\SearchCriteria\Expr\Or
      * @throws none
      */
     public function lor()
@@ -80,7 +85,7 @@ class Iota_SearchCriteria
         $num  = count($args);
 
         if ($num > 1) {
-            return new Iota_SearchCriteria_Expr_Or($args);
+            return new Expr\LogicalOr($args);
         } else if ($num == 1) {
             return reset($args); // The exact index is unknown
         } else {
@@ -95,13 +100,13 @@ class Iota_SearchCriteria
      * an object representing the NOT expression.
      *
      * @param array|Iota_SearchCriteria_Term_Abstract
-     * @returns Iota_SearchCriteria_Expr_Not
+     * @returns \Iota\SearchCriteria\Expr\Not
      * @throws none
      */
     public function lnot($term)
     {
         if ($term) {
-            return new Iota_SearchCriteria_Expr_Not($term);
+            return new Expr\LogicalNot($term);
         } else {
             return null;
         }
@@ -115,7 +120,7 @@ class Iota_SearchCriteria
      *
      * @param string Operator name (must match Term class suffix)
      * @param string Field name
-     * @returns Iota_SearchCriteria_Term_Abstract
+     * @returns \Iota\SearchCriteria\Term\Abstract
      * @throws none
      */
     protected function _op($op, $field)
@@ -139,7 +144,7 @@ class Iota_SearchCriteria
         if ('' === $value || array() === $value) {
             return null;
         } else {
-            $class = 'Iota_SearchCriteria_Term_'.$op;
+            $class = '\Iota\SearchCriteria\Term\\'.$op;
             return new $class($field, $value);
         }
     }
@@ -208,11 +213,12 @@ class Iota_SearchCriteria
      *
      * @param string Field name
      * @param bool Whether to allow an 'open-ended' expression
-     * @returns Iota_SearchCriteria_Term_Between
+     * @returns \Iota\SearchCriteria\Term\Between
      * @throws none
      */
     public function between($field, $openEnded = false)
     {
+        // The field alias should be the same for both the hi and lo fields
         $alias   = '';
         $loField = $field.'_lo';
         $hiField = $field.'_hi';
@@ -233,18 +239,18 @@ class Iota_SearchCriteria
             if ('' === $loValue && '' === $hiValue) {
                 return null;
             } else if ($loValue && '' === $hiValue) {
-                return new Iota_SearchCriteria_Term_Ge($field, $loValue);
+                return new Term\Ge($field, $loValue);
             } else if ('' === $loValue && $hiValue) {
-                return new Iota_SearchCriteria_Term_Le($field, $hiValue);
+                return new Term\Le($field, $hiValue);
             } else {
-                return new Iota_SearchCriteria_Term_Between($field, $loValue, $hiValue);
+                return new Term\Between($field, $loValue, $hiValue);
             }
 
         } else {
             if ('' === $loValue || '' === $hiValue) {
                 return null;
             } else {
-                return new Iota_SearchCriteria_Term_Between($field, $loValue, $hiValue);
+                return new Term\Between($field, $loValue, $hiValue);
             }
         }
     }
@@ -253,11 +259,11 @@ class Iota_SearchCriteria
      * Literally passes through the given SQL.
      *
      * @param string SQL code
-     * @returns Iota_SearchCriteria_Term_Between
+     * @returns \Iota\SearchCriteria\Term\Literal
      * @throws none
      */
     public function literal($sql)
     {
-        return new Iota_SearchCriteria_Term_Literal($sql);
+        return new Term\Literal($sql);
     }
 }

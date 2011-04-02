@@ -1,8 +1,10 @@
 <?php
+namespace Iota\SearchCriteria\Term;
+
 /**
  * Contains term
  *
- * @todo Somehow factor quoting/escaping out to DB abstraction layer
+ * @todo Delegate DB value quoting/escaping to DBAL (ie, Doctrine)
  *
  * @category   Iota
  * @package    SearchCriteria
@@ -10,7 +12,7 @@
  * @copyright  Bryce Lohr 2008
  * @license    http://www.gearheadsoftware.com/bsd-license.txt
  */
-class Iota_SearchCriteria_Term_Contains extends Iota_SearchCriteria_Term_Abstract
+class Contains extends AbstractTerm
 {
     protected $_op = 'LIKE';
 
@@ -22,8 +24,7 @@ class Iota_SearchCriteria_Term_Contains extends Iota_SearchCriteria_Term_Abstrac
          * backslashes, which is actually needed in this case, to get through 
          * MySQL's and Pgsql's string literal parsers.
          *
-         * Obviously, there's no elegant solution to the DB-specific syntax 
-         * problem, so it's ignored for now.
+         * This is a good reason why DB escaping needs to be delegated out
          */
         $val = '%' . str_replace(array('%','_'), array('\\%','\\_'), $val) . '%';
         return parent::quoteValue($val); 

@@ -1,4 +1,6 @@
 <?php
+namespace Iota;
+
 /**
  * Search Criteria tests
  *
@@ -9,9 +11,9 @@
  * @license    http://www.gearheadsoftware.com/bsd-license.txt
  */
 
-require_once dirname(__FILE__).'/../testSetup.php';
+require_once __DIR__.'/../testSetup.php';
 
-class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
+class SearchCriteriaTest extends \PHPUnit_Framework_TestCase
 {
     public $userInput;
 
@@ -39,22 +41,21 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @expectedException PHPUnit_Framework_Error
+     */
     public function testConstructorTakesArrayOfInput()
     {
         // Make sure it takes an argument w/o complaining
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
-        // Omitting the argument should cause a PHP error
-        try {
-            $c = new Iota_SearchCriteria;
-        } catch (PHPUnit_Framework_Error $e) {
-            // success
-        }
+        // Expect a PHP Error here
+        $c = new SearchCriteria;
     }
 
     public function testOperatorProducesSingleTerm1()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $t = $c->eq('field1');
         $this->assertEquals(
@@ -65,7 +66,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testOperatorProducesSingleTerm2()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $t = $c->ne('field2');
         $this->assertEquals(
@@ -76,7 +77,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testOperatorProducesSingleTerm3()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $t = $c->le('field3');
         $this->assertEquals(
@@ -87,7 +88,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testOperatorProducesSingleTerm4()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $t = $c->ge('field4');
         $this->assertEquals(
@@ -98,7 +99,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testOperatorProducesSingleTerm5()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $t = $c->gt('field5');
         $this->assertEquals(
@@ -109,7 +110,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testOperatorProducesSingleTerm6()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $t = $c->lt('field6');
         $this->assertEquals(
@@ -120,7 +121,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testOperatorProducesSingleTerm7()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $t = $c->begins('field7');
         $this->assertEquals(
@@ -131,7 +132,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testOperatorProducesSingleTerm8()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $t = $c->contains('field8');
         $this->assertEquals(
@@ -142,7 +143,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testOperatorProducesSingleTerm9()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $t = $c->between('field9');
         $this->assertEquals(
@@ -153,7 +154,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testOperatorProducesSingleTerm10()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $t = $c->in('field10');
         $this->assertEquals(
@@ -164,7 +165,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testInOperatorResolvesToEqForNonArrayValue()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $t = $c->in('field1');
         $this->assertEquals(
@@ -175,7 +176,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testInOperatorResolvesToEqForSingleElementArray()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $t = $c->in('field11');
         $this->assertEquals(
@@ -188,7 +189,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
     {
         // Omitting the low limit should still use the high limit
         $this->userInput['field9_lo'] = '';
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $t = $c->between('field9', true);
         $this->assertEquals(
@@ -199,7 +200,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
         // Omitting the high limit should still use the low limit
         $this->userInput['field9_lo'] = 'input9_loval';
         $this->userInput['field9_hi'] = '';
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $t = $c->between('field9', true);
         $this->assertEquals(
@@ -210,7 +211,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testLiteralReturnsSQLAsIs()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $t = $c->literal('any text here');
         $this->assertEquals(
@@ -229,7 +230,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
     {
         $input = array('alias-field'=>'value');
 
-        $c = new Iota_SearchCriteria($input);
+        $c = new SearchCriteria($input);
         $t = $c->eq('alias.field');
 
         $this->assertEquals(
@@ -242,7 +243,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
     {
         $input = array('field'=>'value');
 
-        $c = new Iota_SearchCriteria($input);
+        $c = new SearchCriteria($input);
         $t = $c->eq('alias.field');
 
         $this->assertEquals(
@@ -253,7 +254,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testTermsGroupedWithAndExpression()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $e = $c->land($c->eq('field1'), $c->ne('field2'), $c->le('field3'), 
                       $c->ge('field4'), $c->gt('field5'), $c->lt('field6'), 
@@ -271,7 +272,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testTermsGroupedWithOrExpression()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $e = $c->lor($c->eq('field1'), $c->ne('field2'), $c->le('field3'), 
                      $c->ge('field4'), $c->gt('field5'), $c->lt('field6'), 
@@ -289,7 +290,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testNotExpressionNegatesOneTerm()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $e = $c->lnot($c->begins('field1'));
 
@@ -301,7 +302,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testExpressionsCanBeNested1()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $e = $c->land($c->eq('field1'), $c->lor($c->lt('field2'), $c->gt('field3')));
         $this->assertEquals(
@@ -312,7 +313,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testExpressionsCanBeNested2()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $e = $c->lor($c->eq('field1'), $c->land($c->lt('field2'), $c->gt('field3')));
         $this->assertEquals(
@@ -323,7 +324,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testExpressionsCanBeNested3()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $e = $c->lnot($c->land($c->lt('field1'), $c->gt('field2')));
         $this->assertEquals(
@@ -334,7 +335,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testExpressionsCanBeNested4()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $e = $c->land($c->eq('field1'), $c->lor($c->lt('field2'), $c->gt('field3')),
              $c->lnot($c->land($c->eq('field4'), $c->lor($c->le('field5'),
@@ -349,7 +350,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testEmptyInputIsSkipped1()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $ops = array('eq', 'ne', 'lt', 'gt', 'le', 'ge', 'begins', 'contains');
         foreach ($ops as $op) {
@@ -366,7 +367,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testEmptyInputIsSkipped2()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $e = $c->land($c->eq('empty1'), $c->lor($c->ne('empty2'), $c->between('empty3')));
         $this->assertEquals(null, $e);
@@ -374,7 +375,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testEmptyInputIsSkipped3()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $e = $c->land($c->eq('field1'), $c->eq('empty1'));
         $this->assertEquals(
@@ -399,7 +400,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
     // parmater list
     public function testEmptyInputIsSkipped4()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
 
         $e = $c->land($c->eq('empty1'), $c->eq('field1'));
         $this->assertEquals(
@@ -422,7 +423,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testTermQuoteValueQuotesValueAndEscapesChars()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
         $t = $c->eq('field1');
 
         // It gets real confusing with all the backslashes...
@@ -434,7 +435,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testBeginsEscapesLikeOperatorWildcards()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
         $t = $c->begins('field1');
 
         $expected = '\'Evil chars: \000\n\r\\\\\\\'\"\032%\'';
@@ -448,7 +449,7 @@ class Iota_SearchCriteriaTest extends PHPUnit_Framework_TestCase
 
     public function testContainsEscapesLikeOperatorWildcards()
     {
-        $c = new Iota_SearchCriteria($this->userInput);
+        $c = new SearchCriteria($this->userInput);
         $t = $c->contains('field1');
 
         $expected = '\'%Evil chars: \000\n\r\\\\\\\'\"\032%\'';

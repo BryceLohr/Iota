@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<phpunit bootstrap="testSetup.php">
+    <php>
+        <includePath>..\library</includePath>
+    </php>
+</phpunit>

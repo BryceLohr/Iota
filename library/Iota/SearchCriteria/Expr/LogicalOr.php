@@ -1,6 +1,8 @@
 <?php
+namespace Iota\SearchCriteria\Expr;
+
 /**
- * And expression
+ * Or expression
  *
  * @category   Iota
  * @package    SearchCriteria
@@ -8,7 +10,7 @@
  * @copyright  Bryce Lohr 2008
  * @license    http://www.gearheadsoftware.com/bsd-license.txt
  */
-class Iota_SearchCriteria_Expr_And extends Iota_SearchCriteria_Expr_Abstract
+class LogicalOr extends AbstractExpression
 {
-    protected $_op = 'AND';
+    protected $_op = 'OR';
 }

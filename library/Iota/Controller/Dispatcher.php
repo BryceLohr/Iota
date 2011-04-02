@@ -1,4 +1,6 @@
 <?php
+namespace Iota\Controller;
+
 /**
  * Dispatches an HTTP request to a specific action Controller class. The Router 
  * object decides which Controller to route the request to, and this class will 
@@ -10,7 +12,7 @@
  * @copyright  Bryce Lohr 2008
  * @license    http://www.gearheadsoftware.com/bsd-license.txt
  */
-class Iota_Controller_Dispatcher
+class Dispatcher
 {
     /**
      * @var Iota_Controller_Router
@@ -35,11 +37,11 @@ class Iota_Controller_Dispatcher
     /**
      * Constructor
      *
-     * @param Iota_Router
+     * @param \Iota\Controller\Router
      * @returns void
      * @throws none
      */
-    public function __construct(Iota_Controller_Router $router)
+    public function __construct(Router $router)
     {
         $this->_router = $router;
         $this->_404callback = null;
@@ -49,11 +51,11 @@ class Iota_Controller_Dispatcher
     /**
      * Property accessor for the router object
      *
-     * @param Iota_Controller_Router
-     * @returns Iota_Controller_Router
+     * @param \Iota\Controller\Router
+     * @returns \Iota\Controller\Router
      * @throws none
      */
-    public function router(Iota_Controller_Router $router = null)
+    public function router(Router $router = null)
     {
         if (null === $router) {
             return $this->_router;
@@ -76,7 +78,7 @@ class Iota_Controller_Dispatcher
             return $this->_404callback;
         } else {
             if (!is_callable($callback)) {
-                throw new DomainException('404 callback must be a standard PHP callback; i.e. is_callable()');
+                throw new \DomainException('404 callback must be a standard PHP callback; i.e. is_callable()', 1);
             }
             $this->_404callback = $callback;
         }
@@ -96,7 +98,7 @@ class Iota_Controller_Dispatcher
             return $this->_405callback;
         } else {
             if (!is_callable($callback)) {
-                throw new DomainException('405 callback must be a standard PHP callback; i.e. is_callable()');
+                throw new \DomainException('405 callback must be a standard PHP callback; i.e. is_callable()', 2);
             }
             $this->_405callback = $callback;
         }
@@ -120,6 +122,10 @@ class Iota_Controller_Dispatcher
      * before/after method(s). Prepend the request method with "before" or 
      * "after", like so: beforeGet(), afterGet(), beforePost(), afterPost(); and 
      * so on. Notice the camel-casing.
+     *
+     * If the controller has a "before" and/or "after" method, those methods are 
+     * always called first and/or last. Further, they're called regardless of 
+     * the HTTP request method, which allows you to provide universal hooks.
      *
      * @param void
      * @returns mixed The controller object that was dispatched
@@ -153,8 +159,8 @@ class Iota_Controller_Dispatcher
         $after  = 'after' .$method;
 
         // Invoke generic before hook, if available
-        if (method_exists($ctrl, 'beforeAll')) {
-            $ctrl->beforeAll();
+        if (method_exists($ctrl, 'before')) {
+            $ctrl->before();
         }
         // Invoke specific before method, if available
         if (method_exists($ctrl, $before)) {
@@ -167,8 +173,8 @@ class Iota_Controller_Dispatcher
             $ctrl->$after();
         }
         // Invoke generic after hook, if available
-        if (method_exists($ctrl, 'afterAll')) {
-            $ctrl->afterAll();
+        if (method_exists($ctrl, 'after')) {
+            $ctrl->after();
         }
 
         return $ctrl;

@@ -1,4 +1,8 @@
 <?php
+namespace Iota\SearchCriteria\Expr;
+
+use Iota\SearchCriteria\Term;
+
 /**
  * Base class for boolean expressions of terms; i.e., groups of terms separated 
  * by logical operators.
@@ -9,7 +13,7 @@
  * @copyright  Bryce Lohr 2008
  * @license    http://www.gearheadsoftware.com/bsd-license.txt
  */
-abstract class Iota_SearchCriteria_Expr_Abstract
+abstract class AbstractExpression
 {
     protected $_terms;
     protected $_op;
@@ -23,12 +27,12 @@ abstract class Iota_SearchCriteria_Expr_Abstract
     public function __toString()
     {
         foreach ((array)$this->_terms as $key => $term) {
-            if ($term instanceof Iota_SearchCriteria_Term_Abstract ||
-                $term instanceof Iota_SearchCriteria_Expr_Not) {
+            if ($term instanceof Term\AbstractTerm ||
+                $term instanceof LogicalNot) {
                 $this->_terms[$key] = (string) $term;
             } else 
-            if ($term instanceof Iota_SearchCriteria_Expr_And ||
-                $term instanceof Iota_SearchCriteria_Expr_Or) {
+            if ($term instanceof LogicalAnd ||
+                $term instanceof LogicalOr) {
                 $this->_terms[$key] = '('.$term.')';
             }
         }

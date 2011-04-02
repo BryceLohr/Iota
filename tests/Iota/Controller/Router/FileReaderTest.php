@@ -1,4 +1,6 @@
 <?php
+namespace Iota\Controller\Router;
+
 /**
  * Route FileReader unit tests
  *
@@ -9,24 +11,25 @@
  * @license    http://www.gearheadsoftware.com/bsd-license.txt
  */
 
-require_once dirname(__FILE__).'/../../../testSetup.php';
+require_once __DIR__.'/../../../testSetup.php';
 
-class Iota_Controller_Router_FileReaderTest extends PHPUnit_Framework_TestCase
+class FileReaderTest extends \PHPUnit_Framework_TestCase
 {
-    public function testConstructorTakesFilePath()
+    /**
+     * @expectedException PHPUnit_Framework_Error
+     */
+    public function testConstructorRequiresFilePath()
     {
-        // Omitting argument should throw PHP Warning
-        try {
-            $fr = new Iota_Controller_Router_FileReader;
-        } catch (PHPUnit_Framework_Error_Warning $e) {
-            // success
-        }
+        // Expect a PHP Error here
+        $fr = new FileReader;
     }
 
     public function testThrowsIfCantOpenFile()
     {
+        $this->setExpectedException('RuntimeException');
+
         try {
-            $fr = new Iota_Controller_Router_FileReader(dirname(__FILE__).'/nonExistent');
+            $fr = new FileReader(__DIR__.'/nonExistent');
             $fr->routes();
         } catch (RuntimeException $e) {
             if (1 != $e->getCode()) {
@@ -38,7 +41,7 @@ class Iota_Controller_Router_FileReaderTest extends PHPUnit_Framework_TestCase
 
     public function testReadsFileAndReturnsRouteArray()
     {
-        $fr = new Iota_Controller_Router_FileReader(dirname(__FILE__).'/_files/testRoutes.txt');
+        $fr = new FileReader(__DIR__.'/_files/testRoutes.txt');
         
         $expected = array('testRoute' => array('route'=>'/this/is/a/valid/route', 'controller'=>'MapsToThisController'));
         $actual = $fr->routes();

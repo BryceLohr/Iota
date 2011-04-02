@@ -1,6 +1,8 @@
 <?php
+namespace Iota\SearchCriteria\Term;
+
 /**
- * Ne term
+ * Not-equal term
  *
  * @category   Iota
  * @package    SearchCriteria
@@ -8,7 +10,7 @@
  * @copyright  Bryce Lohr 2008
  * @license    http://www.gearheadsoftware.com/bsd-license.txt
  */
-class Iota_SearchCriteria_Term_Ne extends Iota_SearchCriteria_Term_Abstract
+class Ne extends AbstractTerm
 {
     protected $_op = '<>';
 }

@@ -1,6 +1,11 @@
 <?php
+namespace Iota;
+
 /**
- * Represents an HTML view. Encapsulates populating a template with data.
+ * Represents an HTML view. Encapsulates populating a template with data. Allows 
+ * a composite view structure to be built up by assigning other instances of 
+ * this class as view variables. Thus, you can nest templates arbitrarily to 
+ * build complex views out of reusable components.
  *
  * @category   MVC
  * @package    View
@@ -8,7 +13,7 @@
  * @copyright  Bryce Lohr 2008
  * @license    http://www.gearheadsoftware.com/bsd-license.txt
  */
-class Iota_View
+class View
 {
     /**
      * All of the data assigned to the view through normal public property 
@@ -62,11 +67,11 @@ class Iota_View
     /**
      * Sets the parent view instance for this instance
      *
-     * @param Iota_View
+     * @param \Iota\View
      * @returns void
      * @throws none
      */
-    public function setParent(Iota_View $parent)
+    public function setParent(View $parent)
     {
         $this->_parent = $parent;
     }
@@ -77,8 +82,8 @@ class Iota_View
      * current one.
      *
      * @param string Path to view template
-     * @param array|Iterable Optional key/value data for sub-view
-     * @returns Iota_View
+     * @param array|Traversable Optional key/value data for sub-view
+     * @returns \Iota\View
      * @throws none
      */
     public function subview($template, $data = null)
@@ -115,10 +120,8 @@ class Iota_View
         ob_start();
         try {
             require $this->_template;
-        } catch (Exception $e) {
-            $msg = "Uncaught exception '".get_class($e)."': ".$e->getMessage()."\n".
-                   $e->getTraceAsString();
-            trigger_error($msg, E_USER_ERROR);
+        } catch (\Exception $e) {
+            trigger_error("Uncaught $e", E_USER_ERROR);
         }
         return ob_get_clean();
     }
@@ -141,7 +144,7 @@ class Iota_View
     {
         if ($value instanceof $this) {
             $value->setParent($this);
-            $this->_viewData[$name] = (string) $value;
+            $this->_viewData[$name] = (string) $value; // Render subview immediately
         } else {
             $this->_viewData[$name] = $this->escape($value);
         }
@@ -151,9 +154,9 @@ class Iota_View
      * Convenience method to assign a whole set of data to the view in one call.  
      * The given data must be an array or iterable object that maps keys to 
      * values. This is equivilent to manually assigning each value; they get 
-     * escaped just as normal single assignments do.
+     * escaped just like normal single assignments do.
      *
-     * @param array|Iterable Key/value pairs to copy into view
+     * @param array|Traversable Key/value pairs to copy into view
      * @returns void
      * @throws none
      */
@@ -178,8 +181,7 @@ class Iota_View
      * things.
      *
      * One useful side-effect of this is that types are preserved, so you can 
-     * distinguish DB null values from empty strings in the template (for 
-     * example).
+     * distinguish null values from empty strings in the template (for example).
      *
      * @todo Array keys should probably also be escaped, and/or filtered
      *
@@ -207,10 +209,9 @@ class Iota_View
 
     /**
      * Allows assigning data without escaping it first. Of course, it's your 
-     * responsibility to ensure the given data is safe for output before setting 
-     * it via this method. Also, be sure to use names that don't conflict with 
-     * those of the non-raw data, because the non-raw will overwrite the raw on 
-     * conflict.
+     * responsibility to ensure the given data is ultimately escaped for output. 
+     * Also, be sure to use names that don't conflict with those of the non-raw 
+     * data, because the non-raw will overwrite the raw on name conflicts.
      *
      * @param string Property name
      * @param mixed Property value
@@ -291,9 +292,7 @@ class Iota_View
      */
     public function includeJs($path = false)
     {
-        $includeJs = $this->getPlaceholder('__includeJs') 
-            or 
-        $includeJs = array();
+        $includeJs = $this->getPlaceholder('__includeJs') ?: array();
 
         if (!$path) {
             return implode("\n", $includeJs);
@@ -319,9 +318,7 @@ class Iota_View
      */
     public function includeCss($path = false, $media = false)
     {
-        $includeCss = $this->getPlaceholder('__includeCss')
-            or
-        $includeCss = array();
+        $includeCss = $this->getPlaceholder('__includeCss') ?: array();
 
         if (!$path) {
             return implode("\n", $includeCss);
@@ -347,9 +344,7 @@ class Iota_View
      */
     public function addHeadJs($code = false)
     {
-        $addHeadJs = $this->getPlaceholder('__addHeadJs')
-            or
-        $addHeadJs = array();
+        $addHeadJs = $this->getPlaceholder('__addHeadJs') ?: array();
 
         if (!$code) {
             return implode("\n", $addHeadJs);
@@ -373,9 +368,7 @@ class Iota_View
      */
     public function addHeadJsOnce($code = false)
     {
-        $addHeadJsOnce = $this->getPlaceholder('__addHeadJsOnce')
-            or
-        $addHeadJsOnce = array();
+        $addHeadJsOnce = $this->getPlaceholder('__addHeadJsOnce') ?: array();
 
         if (!$code) {
             return implode("\n", $addHeadJsOnce);
@@ -406,9 +399,7 @@ class Iota_View
      */
     public function addHeadCss($code = false, $media = false)
     {
-        $addHeadCss = $this->getPlaceholder('__addHeadCss')
-            or
-        $addHeadCss = array();
+        $addHeadCss = $this->getPlaceholder('__addHeadCss') ?: array();
 
         if (!$code) {
             return implode("\n", $addHeadCss);
@@ -438,9 +429,7 @@ class Iota_View
      */
     public function addHeadCssOnce($code = false, $media = false)
     {
-        $addHeadCssOnce = $this->getPlaceholder('__addHeadCssOnce')
-            or
-        $addHeadCssOnce = array();
+        $addHeadCssOnce = $this->getPlaceholder('__addHeadCssOnce') ?: array();
 
         if (!$code) {
             return implode("\n", $addHeadCssOnce);
@@ -498,8 +487,8 @@ class Iota_View
      */
     protected function _routerProxy($method, $args)
     {
-        if (!$router = Iota_InternalRegistry::get('router')) {
-            throw new LogicException('No router object found in the internal registry', 1);
+        if (!$router = \Iota\InternalRegistry::get('router')) {
+            throw new \LogicException('No router object found in the internal registry. Usually this means the router was not created before starting to use the views.', 1);
         }
 
         $url = call_user_func_array(

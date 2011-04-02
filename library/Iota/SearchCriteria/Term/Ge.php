@@ -1,6 +1,8 @@
 <?php
+namespace Iota\SearchCriteria\Term;
+
 /**
- * Ge term
+ * Greater-than-or-equal-to term
  *
  * @category   Iota
  * @package    SearchCriteria
@@ -8,7 +10,7 @@
  * @copyright  Bryce Lohr 2008
  * @license    http://www.gearheadsoftware.com/bsd-license.txt
  */
-class Iota_SearchCriteria_Term_Ge extends Iota_SearchCriteria_Term_Abstract
+class Ge extends AbstractTerm
 {
     protected $_op = '>=';
 }

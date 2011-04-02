@@ -1,4 +1,6 @@
 <?php
+namespace Iota\Controller;
+
 /**
  * Uses a simple URL-mapping paradigm to match the request URL to a controller 
  * class. Supports specifying URL patters with "colon-variables" to extract 
@@ -12,7 +14,7 @@
  * @copyright  Bryce Lohr 2008
  * @license    http://www.gearheadsoftware.com/bsd-license.txt
  */
-class Iota_Controller_Router
+class Router
 {
     /**
      * List of routes. Nested array; outer keys are route names, which can be 
@@ -54,10 +56,10 @@ class Iota_Controller_Router
         $this->routes($routes);
         $this->_matchedRoute = null;
 
-        // Store a reference so other code can access the router later.  
-        // Initially, this allows the View to easily use the router to create 
+        // Store a reference so other code can access the router later. This 
+        // primarily allows View objects to easily use the router to create 
         // URLs.
-        Iota_InternalRegistry::set('router', $this);
+        \Iota\InternalRegistry::set('router', $this);
     }
 
     /**
@@ -93,7 +95,7 @@ class Iota_Controller_Router
     }
 
     /**
-     * Accessor method for the $_matchedRoute property
+     * Read-only accessor method for the $_matchedRoute property
      *
      * @param void
      * @returns string Matched route name
@@ -123,8 +125,8 @@ class Iota_Controller_Router
         }
 
         // If using the baseUrl, only match if the current REQUEST_URI has the 
-        // prefix. Thereafter, all the routes will effectively be relative to 
-        // the prefix.
+        // base URL as a prefix. Thereafter, all the routes will effectively be 
+        // relative to that prefix.
         if ($this->_baseUrl) {
             if (0 === strpos($path, $this->_baseUrl)) {
                 // Remove the prefix from the path before route matching
@@ -183,7 +185,8 @@ class Iota_Controller_Router
         $match = $matches[$minVars];
 
         // Turn the route variables into normal GET vars, since they came in on 
-        // the URL.
+        // the URL anyway. Makes route vars replaceable with traditional query 
+        // string params, which may help in the absence of mod_rewrite
         $_GET = array_merge($_GET, $match['vars']);
 
         $this->_matchedRoute = $match['name'];
@@ -203,7 +206,7 @@ class Iota_Controller_Router
     public function url($name, array $parms = array())
     {
         if (!isset($this->_routes[$name])) {
-            throw new DomainException("No route found named '$name'", 1);
+            throw new \DomainException("No route found named '$name'", 1);
         }
 
         $route = $this->_routes[$name]['route'];
@@ -245,14 +248,14 @@ class Iota_Controller_Router
     {
         // Auto-detect current HTTPS status by default
         if (null === $https) {
-            $https = empty($_SERVER['HTTPS']) || 'off' == $_SERVER['HTTPS']?
-                     'http://': 'https://';
+            $protocol = empty($_SERVER['HTTPS']) || 'off' == $_SERVER['HTTPS']?
+                        'http://': 'https://';
         } else if (true == $https) {
-            $https = 'https://';
+            $protocol = 'https://';
         } else {
-            $https = 'http://';
+            $protocol = 'http://';
         }
 
-        return $https . $_SERVER['HTTP_HOST'] . $this->url($name, $parms);
+        return $protocol . $_SERVER['HTTP_HOST'] . $this->url($name, $parms);
     }
 }

@@ -1,4 +1,6 @@
 <?php
+namespace Iota\SearchCriteria\Term;
+
 /**
  * Between term
  *
@@ -8,7 +10,7 @@
  * @copyright  Bryce Lohr 2008
  * @license    http://www.gearheadsoftware.com/bsd-license.txt
  */
-class Iota_SearchCriteria_Term_Between extends Iota_SearchCriteria_Term_Abstract
+class Between extends AbstractTerm
 {
     protected $_field;
     protected $_value1;

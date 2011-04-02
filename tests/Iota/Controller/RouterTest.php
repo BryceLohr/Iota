@@ -1,4 +1,6 @@
 <?php
+namespace Iota\Controller;
+
 /**
  * Router unit tests
  *
@@ -9,23 +11,23 @@
  * @license    http://www.gearheadsoftware.com/bsd-license.txt
  */
 
-require_once dirname(__FILE__).'/../../testSetup.php';
+require_once __DIR__.'/../../testSetup.php';
 
-class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
+class RouterTest extends \PHPUnit_Framework_TestCase
 {
     public function testConstructorTakesRouteArray()
     {
         $routes = array('test' => array('route'=>'/test', 'controller' => 'TestController'));
-        $r = new Iota_Controller_Router($routes);
+        $r = new Router($routes);
 
         $this->assertEquals($routes, $r->routes());
-        $this->assertSame($r, Iota_InternalRegistry::get('router'));
+        $this->assertSame($r, \Iota\InternalRegistry::get('router'));
     }
 
     public function testRouteMatchesStaticRoute()
     {
         $routes = array('test' => array('route'=>'/test', 'controller' => 'TestController'));
-        $r = new Iota_Controller_Router($routes);
+        $r = new Router($routes);
 
         $_SERVER['REQUEST_URI'] = '/test';
 
@@ -36,7 +38,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
     public function testRouteStoresMatchedRouteName()
     {
         $routes = array('test' => array('route'=>'/test', 'controller' => 'TestController'));
-        $r = new Iota_Controller_Router($routes);
+        $r = new Router($routes);
 
         $_SERVER['REQUEST_URI'] = '/test';
 
@@ -47,7 +49,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
     public function testRouteIgnoresQueryString1()
     {
         $routes = array('test' => array('route'=>'/test', 'controller' => 'TestController'));
-        $r = new Iota_Controller_Router($routes);
+        $r = new Router($routes);
 
         $_SERVER['REQUEST_URI'] = '/test?q=p&foo=bar';
 
@@ -58,7 +60,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
     public function testRouteReturnsFalseOnNoMatch()
     {
         $routes = array('test' => array('route'=>'/test', 'controller' => 'TestController'));
-        $r = new Iota_Controller_Router($routes);
+        $r = new Router($routes);
 
         $_SERVER['REQUEST_URI'] = '/foobar';
 
@@ -68,7 +70,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
     public function testRouteMatchesRouteWithVars()
     {
         $routes = array('test' => array('route'=>'/test/:var1/:var2', 'controller' => 'TestController'));
-        $r = new Iota_Controller_Router($routes);
+        $r = new Router($routes);
 
         $_SERVER['REQUEST_URI'] = '/test/foo/bar';
         $this->assertEquals('TestController', $r->route());
@@ -83,7 +85,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
     public function testRouteIgnoresQueryString2()
     {
         $routes = array('test' => array('route'=>'/test/:var1/:var2', 'controller' => 'TestController'));
-        $r = new Iota_Controller_Router($routes);
+        $r = new Router($routes);
 
         $_SERVER['REQUEST_URI'] = '/test/foo/bar?foo=bar&q=p';
         $this->assertEquals('TestController', $r->route());
@@ -98,7 +100,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
     public function testRouteVarsStoredInGet()
     {
         $routes = array('test' => array('route'=>'/test/:var1/:var2', 'controller' => 'TestController'));
-        $r = new Iota_Controller_Router($routes);
+        $r = new Router($routes);
 
         $_SERVER['REQUEST_URI'] = '/test/foo/bar';
         $this->assertEquals('TestController', $r->route());
@@ -115,7 +117,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
             'lessSpecific' => array('route'=>'/test/:var1/:var2', 'controller' => 'TestController1'),
             'moreSpecific' => array('route'=>'/test/static/:var1', 'controller' => 'TestController2')
         );
-        $r = new Iota_Controller_Router($routes);
+        $r = new Router($routes);
 
         $_SERVER['REQUEST_URI'] = '/test/static/foo';
         $this->assertEquals('TestController2', $r->route());
@@ -132,7 +134,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
             'vars' => array('route'=>'/:with/:vars', 'controller' => 'TestController2')
         );
 
-        $r = new Iota_Controller_Router($routes);
+        $r = new Router($routes);
         $r->baseUrl('/test');
 
         $_SERVER['REQUEST_URI'] = '/test/static';
@@ -149,7 +151,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
             'vars' => array('route'=>'/:with/:vars', 'controller' => 'TestController2')
         );
 
-        $r = new Iota_Controller_Router($routes);
+        $r = new Router($routes);
         $r->baseUrl('/test');
 
         $_SERVER['REQUEST_URI'] = '/static';
@@ -162,7 +164,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
     public function testUrlRecreatesUrlToController1()
     {
         $routes = array('test' => array('route'=>'/test/:var1/:var2', 'controller' => 'TestController'));
-        $r = new Iota_Controller_Router($routes);
+        $r = new Router($routes);
 
         $expected = '/test/foo/bar';
         $actual = $r->url('test', array('var1'=>'foo', 'var2'=>'bar'));
@@ -174,7 +176,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
     {
         // Ensure a parameter-less route works
         $routes = array('test' => array('route'=>'/', 'controller' => 'TestController'));
-        $r = new Iota_Controller_Router($routes);
+        $r = new Router($routes);
 
         $expected = '/';
         $actual = $r->url('test');
@@ -185,7 +187,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
     public function testUrlPutsLeftOverDataIntoQueryString()
     {
         $routes = array('test' => array('route'=>'/test/:var1/:var2', 'controller' => 'TestController'));
-        $r = new Iota_Controller_Router($routes);
+        $r = new Router($routes);
 
         $argsep = ini_get('arg_separator.output');
 
@@ -199,7 +201,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
     public function testUrlEncodesParams()
     {
         $routes = array('test' => array('route'=>'/test/:var1/:var2', 'controller' => 'TestController'));
-        $r = new Iota_Controller_Router($routes);
+        $r = new Router($routes);
 
         $argsep = ini_get('arg_separator.output');
 
@@ -213,7 +215,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
     public function testAbsUrlReturnsAbsoluteUrl()
     {
         $routes = array('test' => array('route'=>'/test/:var1/:var2', 'controller' => 'TestController'));
-        $r = new Iota_Controller_Router($routes);
+        $r = new Router($routes);
 
         $_SERVER['HTTP_HOST'] = 'unit.tests';
 
@@ -226,7 +228,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
     public function testAbsUrlReturnsAbsoluteUrlWithHttps()
     {
         $routes = array('test' => array('route'=>'/test/:var1/:var2', 'controller' => 'TestController'));
-        $r = new Iota_Controller_Router($routes);
+        $r = new Router($routes);
 
         $_SERVER['HTTP_HOST'] = 'unit.tests';
 
@@ -243,7 +245,7 @@ class Iota_Controller_RouterTest extends PHPUnit_Framework_TestCase
             'test2' => array('route'=>'/test2/:var1', 'controller' => 'TestController2')
         );
 
-        $r = new Iota_Controller_Router($routes);
+        $r = new Router($routes);
 
         $_SERVER['HTTP_HOST'] = 'unit.tests';
 

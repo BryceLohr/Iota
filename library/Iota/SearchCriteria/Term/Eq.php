@@ -1,6 +1,8 @@
 <?php
+namespace Iota\SearchCriteria\Term;
+
 /**
- * Eq term
+ * Equals term
  *
  * @category   Iota
  * @package    SearchCriteria
@@ -8,7 +10,7 @@
  * @copyright  Bryce Lohr 2008
  * @license    http://www.gearheadsoftware.com/bsd-license.txt
  */
-class Iota_SearchCriteria_Term_Eq extends Iota_SearchCriteria_Term_Abstract
+class Eq extends AbstractTerm
 {
     protected $_op = '=';
 }

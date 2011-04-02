@@ -1,4 +1,6 @@
 <?php
+namespace Iota\Controller\Router;
+
 /**
  * Reads a text file of routes and loads it into an array for consumption by the 
  * Router. The text file should contain two columns of text, separated by any 
@@ -14,7 +16,7 @@
  * @copyright  Bryce Lohr 2008
  * @license    http://www.gearheadsoftware.com/bsd-license.txt
  */
-class Iota_Controller_Router_FileReader
+class FileReader
 {
     /**
      * Path to the routes file
@@ -35,7 +37,7 @@ class Iota_Controller_Router_FileReader
     }
 
     /**
-     * Reads the routes file and creates an array compatible with Iota_Router's 
+     * Reads the routes file and creates an array compatible with \Iota\Router's 
      * routes array.
      *
      * @param void
@@ -46,19 +48,19 @@ class Iota_Controller_Router_FileReader
     {
         $fp = @fopen($this->_path, 'r');
         if (!$fp) {
-            throw new RuntimeException("File '{$this->_path}' cannot be opened to read routes from.", 1);
+            throw new \RuntimeException("File '{$this->_path}' cannot be opened to read routes from.", 1);
         }
 
         $routes = array();
 
         while (!feof($fp)) {
-            $name = $route = $ctrl = '';
+            $name = $route = $controller = '';
 
-            if (3 != fscanf($fp, '%s %s %s', $name, $route, $ctrl)) continue;
+            if (3 != fscanf($fp, '%s %s %s', $name, $route, $controller)) continue;
 
             if ('#' == $name[0]) continue;
             
-            $routes[$name] = array('route'=>$route, 'controller'=>$ctrl);
+            $routes[$name] = compact('route', 'controller');
         }
         fclose($fp);
 

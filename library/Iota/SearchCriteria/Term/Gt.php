@@ -1,6 +1,8 @@
 <?php
+namespace Iota\SearchCriteria\Term;
+
 /**
- * Gt term
+ * Greater-than term
  *
  * @category   Iota
  * @package    SearchCriteria
@@ -8,7 +10,7 @@
  * @copyright  Bryce Lohr 2008
  * @license    http://www.gearheadsoftware.com/bsd-license.txt
  */
-class Iota_SearchCriteria_Term_Gt extends Iota_SearchCriteria_Term_Abstract
+class Gt extends AbstractTerm
 {
     protected $_op = '>';
 }

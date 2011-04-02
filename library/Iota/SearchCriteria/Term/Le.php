@@ -1,6 +1,8 @@
 <?php
+namespace Iota\SearchCriteria\Term;
+
 /**
- * Le term
+ * Less-than-or-equal-to term
  *
  * @category   Iota
  * @package    SearchCriteria
@@ -8,7 +10,7 @@
  * @copyright  Bryce Lohr 2008
  * @license    http://www.gearheadsoftware.com/bsd-license.txt
  */
-class Iota_SearchCriteria_Term_Le extends Iota_SearchCriteria_Term_Abstract
+class Le extends AbstractTerm
 {
     protected $_op = '<=';
 }

@@ -1,4 +1,6 @@
 <?php
+namespace Iota\Controller;
+
 /**
  * Dispatcher unit tests
  *
@@ -9,36 +11,30 @@
  * @license    http://www.gearheadsoftware.com/bsd-license.txt
  */
 
-require_once dirname(__FILE__).'/../../testSetup.php';
+require_once __DIR__.'/../../testSetup.php';
 
-class Iota_Controller_DispatcherTest extends PHPUnit_Framework_TestCase
+class DispatcherTest extends \PHPUnit_Framework_TestCase
 {
-    public function testConstructorTakesRouterObject()
+    /**
+     * @expectedException PHPUnit_Framework_Error
+     */
+    public function testConstructorRequiresRouterObject()
     {
-        $emptyRouter = $this->getMock('Iota_Controller_Router', array(), array(array()));
-
-        // Omitting the argument should throw a PHP error
-        try {
-            $d = new Iota_Controller_Dispatcher;
-        } catch (PHPUnit_Framework_Error $e) {
-            // success
-        }
-
-        // No error should be thrown this time
-        $d = new Iota_Controller_Dispatcher($emptyRouter);
+        // Expect a PHP Error here
+        $d = new Dispatcher;
     }
 
     public function testDispatchCallsControllersRequestMethod()
     {
-        $routeToMock = $this->getMock('Iota_Controller_Router', array(), array(array()));
+        $routeToMock = $this->getMock('\Iota\Controller\Router', array(), array(array()));
         $routeToMock
             ->expects($this->once())
             ->method('route')
-            ->will($this->returnValue('MockController'));
+            ->will($this->returnValue(__NAMESPACE__.'\MockController'));
 
         $_SERVER['REQUEST_METHOD'] = 'GET';
 
-        $d = new Iota_Controller_Dispatcher($routeToMock);
+        $d = new Dispatcher($routeToMock);
         $ctrl = $d->dispatch();
 
         if (!$ctrl->getCalled) {
@@ -48,15 +44,15 @@ class Iota_Controller_DispatcherTest extends PHPUnit_Framework_TestCase
 
     public function testDispatchAssignsRouterToController()
     {
-        $routeToMock = $this->getMock('Iota_Controller_Router', array(), array(array()));
+        $routeToMock = $this->getMock('\Iota\Controller\Router', array(), array(array()));
         $routeToMock
             ->expects($this->once())
             ->method('route')
-            ->will($this->returnValue('MockController'));
+            ->will($this->returnValue(__NAMESPACE__.'\MockController'));
 
         $_SERVER['REQUEST_METHOD']  = 'POST';
 
-        $d = new Iota_Controller_Dispatcher($routeToMock);
+        $d = new Dispatcher($routeToMock);
         $ctrl = $d->dispatch();
 
         $this->assertSame(
@@ -67,10 +63,10 @@ class Iota_Controller_DispatcherTest extends PHPUnit_Framework_TestCase
 
     public function testDispatch404CallsConfiguredMethod()
     {
-        $emptyRouter = $this->getMock('Iota_Controller_Router', array(), array(array()));
+        $emptyRouter = $this->getMock('\Iota\Controller\Router', array(), array(array()));
         $handle404   = new Handle404;
 
-        $d = new Iota_Controller_Dispatcher($emptyRouter);
+        $d = new Dispatcher($emptyRouter);
 
         $d->handle404with(array($handle404, 'execute'));
         $d->dispatch404();
@@ -82,7 +78,7 @@ class Iota_Controller_DispatcherTest extends PHPUnit_Framework_TestCase
 
     public function testDispatches404WhenNoRoutesMatch()
     {
-        $noRoute = $this->getMock('Iota_Controller_Router', array(), array(array()));
+        $noRoute = $this->getMock('\Iota\Controller\Router', array(), array(array()));
         $noRoute
             ->expects($this->once())
             ->method('route')
@@ -90,7 +86,7 @@ class Iota_Controller_DispatcherTest extends PHPUnit_Framework_TestCase
 
         $handle404 = new Handle404;
 
-        $d = new Iota_Controller_Dispatcher($noRoute);
+        $d = new Dispatcher($noRoute);
         $d->handle404With(array($handle404, 'execute'));
         $d->dispatch();
 
@@ -101,17 +97,17 @@ class Iota_Controller_DispatcherTest extends PHPUnit_Framework_TestCase
 
     public function testDispatches404WhenMethodNotFound()
     {
-        $routeToMock = $this->getMock('Iota_Controller_Router', array(), array(array()));
+        $routeToMock = $this->getMock('\Iota\Controller\Router', array(), array(array()));
         $routeToMock
             ->expects($this->once())
             ->method('route')
-            ->will($this->returnValue('MockController'));
+            ->will($this->returnValue(__NAMESPACE__.'\MockController'));
 
         $handle405 = new Handle405;
 
         $_SERVER['REQUEST_METHOD'] = 'PUT';
 
-        $d = new Iota_Controller_Dispatcher($routeToMock);
+        $d = new Dispatcher($routeToMock);
         $d->handle405with(array($handle405, 'execute'));
         $d->dispatch();
 
@@ -122,37 +118,37 @@ class Iota_Controller_DispatcherTest extends PHPUnit_Framework_TestCase
 
     public function testDispatcherCallsBeforeAfterHooks()
     {
-        $routeToHooks = $this->getMock('Iota_Controller_Router', array(), array(array()));
+        $routeToHooks = $this->getMock('\Iota\Controller\Router', array(), array(array()));
         $routeToHooks
             ->expects($this->once())
             ->method('route')
-            ->will($this->returnValue('MockHooksController'));
+            ->will($this->returnValue(__NAMESPACE__.'\MockHooksController'));
 
         $_SERVER['REQUEST_METHOD']    = 'GET';
 
-        $d = new Iota_Controller_Dispatcher($routeToHooks);
+        $d = new Dispatcher($routeToHooks);
         $ctrl = $d->dispatch();
 
-        if (!$ctrl->getCalled || !$ctrl->beforeHookCalled || !$ctrl->afterHookCalled) {
+        if (!$ctrl->getCalled || !$ctrl->specificBeforeCalled || !$ctrl->specificAfterCalled) {
             $this->fail('Failed to call hook methods and action method on MockHooksController');
         }
     }
 
-    public function testDispatcherCallsBeforeAfterAllHooks()
+    public function testDispatcherCallsGenericBeforeAfterHooks()
     {
-        $routeToHooks = $this->getMock('Iota_Controller_Router', array(), array(array()));
+        $routeToHooks = $this->getMock('\Iota\Controller\Router', array(), array(array()));
         $routeToHooks
             ->expects($this->once())
             ->method('route')
-            ->will($this->returnValue('MockHooksController'));
+            ->will($this->returnValue(__NAMESPACE__.'\MockHooksController'));
 
         $_SERVER['REQUEST_METHOD']    = 'GET';
 
-        $d = new Iota_Controller_Dispatcher($routeToHooks);
+        $d = new Dispatcher($routeToHooks);
         $ctrl = $d->dispatch();
 
-        if (!$ctrl->getCalled || !$ctrl->beforeAllCalled || !$ctrl->afterAllCalled) {
-            $this->fail('Failed to call "All" hook methods and action method on MockHooksController');
+        if (!$ctrl->getCalled || !$ctrl->genericBeforeCalled || !$ctrl->genericAfterCalled) {
+            $this->fail('Failed to call generic hook methods and action method on MockHooksController');
         }
     }
 }
@@ -176,19 +172,19 @@ class MockController
 }
 class MockHooksController
 {
-    public $beforeAllCalled  = false;
-    public $afterAllCalled   = false;
-    public $beforeHookCalled = false;
-    public $afterHookCalled  = false;
-    public $getCalled        = false;
+    public $genericBeforeCalled  = false;
+    public $genericAfterCalled   = false;
+    public $specificBeforeCalled = false;
+    public $specificAfterCalled  = false;
+    public $getCalled            = false;
 
-    public function beforeAll()
+    public function before()
     {
-        $this->beforeAllCalled = true;
+        $this->genericBeforeCalled = true;
     }
     public function beforeGet()
     {
-        $this->beforeHookCalled = true;
+        $this->specificBeforeCalled = true;
     }
     public function get()
     {
@@ -196,11 +192,11 @@ class MockHooksController
     }
     public function afterGet()
     {
-        $this->afterHookCalled = true;
+        $this->specificAfterCalled = true;
     }
-    public function afterAll()
+    public function after()
     {
-        $this->afterAllCalled = true;
+        $this->genericAfterCalled = true;
     }
 }
 class Handle404

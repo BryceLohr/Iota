@@ -9,13 +9,12 @@
  * @license    http://www.gearheadsoftware.com/bsd-license.txt
  */
 
-define('IOTA_ROOT', dirname(dirname(__FILE__)));
+/*
+spl_autoload_register(function($className) {
+    include "$className.php";
+});
+ */
 
-set_include_path(
-    IOTA_ROOT.'/library' . PATH_SEPARATOR .
-    IOTA_ROOT.'/tests'   . PATH_SEPARATOR .
-    get_include_path()
-);
-
-// Use the autoloader for everything, including PHPUnit
-require 'registerIotaAutoload.php';
+// Must explicitly specify default because PHPUnit's autoloader will replace the 
+// default otherwise.
+spl_autoload_register('spl_autoload');

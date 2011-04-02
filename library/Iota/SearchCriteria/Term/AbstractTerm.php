@@ -1,8 +1,10 @@
 <?php
+namespace Iota\SearchCriteria\Term;
+
 /**
  * Base class for individual search criteria terms.
  *
- * @todo Somehow factor quoting/escaping out to DB abstraction layer
+ * @todo Delegate DB value quoting/escaping to DBAL (ie, Doctrine)
  *
  * @category   Iota
  * @package    SearchCriteria
@@ -10,7 +12,7 @@
  * @copyright  Bryce Lohr 2008
  * @license    http://www.gearheadsoftware.com/bsd-license.txt
  */
-abstract class Iota_SearchCriteria_Term_Abstract
+abstract class AbstractTerm
 {
     protected $_field;
     protected $_value;

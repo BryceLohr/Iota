@@ -1,4 +1,6 @@
 <?php
+namespace Iota\SearchCriteria\Term;
+
 /**
  * Passes through a literal SQL string. Useful for constants, or expressions 
  * that don't currently have an appropriate operator class. Obviously, all 
@@ -11,7 +13,7 @@
  * @copyright  Bryce Lohr 2008
  * @license    http://www.gearheadsoftware.com/bsd-license.txt
  */
-class Iota_SearchCriteria_Term_Literal
+class Literal
 {
     protected $_sql;
 

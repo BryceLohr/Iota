@@ -1,4 +1,6 @@
 <?php
+namespace Iota\SearchCriteria\Expr;
+
 /**
  * Not expression
  *
@@ -8,7 +10,7 @@
  * @copyright  Bryce Lohr 2008
  * @license    http://www.gearheadsoftware.com/bsd-license.txt
  */
-class Iota_SearchCriteria_Expr_Not extends Iota_SearchCriteria_Expr_Abstract
+class LogicalNot extends AbstractExpression
 {
     protected $_op = 'NOT';
 

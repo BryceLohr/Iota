@@ -1,4 +1,6 @@
 <?php
+namespace Iota;
+
 /**
  * Provides a global registry strictly for internal use by the Iota Framework.  
  * The framework will store things here that would otherwise be very cumbersome 
@@ -13,7 +15,7 @@
  * @copyright  Bryce Lohr 2008
  * @license    http://www.gearheadsoftware.com/bsd-license.txt
  */
-class Iota_InternalRegistry
+class InternalRegistry
 {
     /**
      * Stores the registry's data.
